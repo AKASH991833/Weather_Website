@@ -1,0 +1,441 @@
+/* ============================================
+   WeatherNow - Component Styles
+   Additional UI Components & Animations
+   ============================================ */
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* ============================================
+   Skeleton Loading States
+   ============================================ */
+
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--glass-bg) 0%,
+    var(--glass-bg-light) 50%,
+    var(--glass-bg) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+.skeleton-text {
+  height: 1em;
+  margin-bottom: var(--space-sm);
+}
+
+.skeleton-title {
+  height: 2em;
+  width: 60%;
+  margin: 0 auto var(--space-lg);
+}
+
+.skeleton-temp {
+  height: 4em;
+  width: 8em;
+  margin: var(--space-lg) auto;
+}
+
+.skeleton-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.skeleton-forecast {
+  height: 120px;
+  border-radius: var(--radius-lg);
+}
+
+/* ============================================
+   Weather Condition Modifiers
+   ============================================ */
+
+.weather-card.clear-day {
+  background: linear-gradient(
+    135deg,
+    rgba(102, 126, 234, 0.2) 0%,
+    rgba(118, 75, 162, 0.1) 100%
+  );
+}
+
+.weather-card.clear-night {
+  background: linear-gradient(
+    135deg,
+    rgba(26, 26, 46, 0.4) 0%,
+    rgba(15, 52, 96, 0.3) 100%
+  );
+}
+
+.weather-card.cloudy {
+  background: linear-gradient(
+    135deg,
+    rgba(150, 150, 150, 0.2) 0%,
+    rgba(100, 100, 100, 0.1) 100%
+  );
+}
+
+.weather-card.rainy {
+  background: linear-gradient(
+    135deg,
+    rgba(66, 153, 225, 0.25) 0%,
+    rgba(30, 58, 138, 0.2) 100%
+  );
+}
+
+.weather-card.stormy {
+  background: linear-gradient(
+    135deg,
+    rgba(75, 85, 99, 0.3) 0%,
+    rgba(31, 41, 55, 0.25) 100%
+  );
+}
+
+.weather-card.snowy {
+  background: linear-gradient(
+    135deg,
+    rgba(226, 232, 240, 0.2) 0%,
+    rgba(203, 213, 225, 0.15) 100%
+  );
+}
+
+/* ============================================
+   Button Components
+   ============================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-lg);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--gradient-main);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: var(--glass-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+}
+
+.btn-secondary:hover {
+  background: var(--glass-bg-light);
+}
+
+.btn-icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+
+/* ============================================
+   Badge Components
+   ============================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-primary {
+  background: rgba(102, 126, 234, 0.3);
+  color: var(--color-accent);
+}
+
+.badge-success {
+  background: rgba(72, 187, 120, 0.3);
+  color: var(--color-success);
+}
+
+.badge-warning {
+  background: rgba(237, 137, 54, 0.3);
+  color: var(--color-warning);
+}
+
+.badge-error {
+  background: rgba(245, 101, 101, 0.3);
+  color: var(--color-error);
+}
+
+/* ============================================
+   Tooltip
+   ============================================ */
+
+.tooltip {
+  position: relative;
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + var(--space-sm));
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: var(--text-primary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--transition-fast);
+  z-index: var(--z-tooltip);
+}
+
+.tooltip:hover::after {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ============================================
+   Scrollbar Styling
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--glass-bg);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--glass-border);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Firefox Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--glass-border) var(--glass-bg);
+}
+
+/* ============================================
+   Leaflet Map Customizations
+   ============================================ */
+
+.leaflet-container {
+  background: var(--gradient-sky);
+  font-family: var(--font-family);
+}
+
+.leaflet-popup-content-wrapper {
+  background: var(--gradient-glass);
+  backdrop-filter: var(--backdrop-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-lg);
+  color: var(--text-primary);
+}
+
+.leaflet-popup-content {
+  margin: var(--space-md);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+}
+
+.leaflet-popup-tip {
+  background: var(--gradient-glass);
+  backdrop-filter: var(--backdrop-blur);
+}
+
+.leaflet-control-zoom {
+  border: 1px solid var(--glass-border) !important;
+  box-shadow: var(--glass-shadow) !important;
+}
+
+.leaflet-control-zoom a {
+  background: var(--gradient-glass) !important;
+  backdrop-filter: var(--backdrop-blur);
+  color: var(--text-primary) !important;
+  border: 1px solid transparent !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background: var(--glass-bg-light) !important;
+}
+
+.leaflet-bar {
+  border: 1px solid var(--glass-border) !important;
+}
+
+/* ============================================
+   Empty States
+   ============================================ */
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-3xl);
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-lg);
+  opacity: 0.5;
+}
+
+.empty-state-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.empty-state-description {
+  font-size: var(--font-size-base);
+  max-width: 400px;
+}
+
+/* ============================================
+   Data States
+   ============================================ */
+
+.data-loading .weather-card,
+.data-loading .forecast-container {
+  pointer-events: none;
+}
+
+.data-error {
+  border-color: var(--color-error) !important;
+}
+
+.data-success {
+  border-color: var(--color-success) !important;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+  .header,
+  .footer,
+  .map-container,
+  .loading-overlay,
+  .error-toast,
+  .skip-link {
+    display: none !important;
+  }
+  
+  body {
+    background: white;
+    color: black;
+  }
+  
+  .weather-card,
+  .forecast-container {
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .current-temp {
+    color: black;
+  }
+}
+
+/* ============================================
+   High Contrast Mode
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    --glass-bg: rgba(0, 0, 0, 0.8);
+    --glass-border: rgba(255, 255, 255, 0.5);
+    --text-muted: rgba(255, 255, 255, 0.9);
+  }
+  
+  .weather-card,
+  .forecast-container,
+  .header {
+    border-width: 2px;
+  }
+}

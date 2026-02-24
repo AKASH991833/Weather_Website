@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow - Ultimate Weather Experience</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body class="theme-light">
+  <!-- Dynamic Weather Background -->
+  <div id="weather-bg" class="weather-bg">
+    <div class="weather-effects">
+      <div id="rain-container" class="rain-container"></div>
+      <div id="snow-container" class="snow-container"></div>
+      <div id="sun-rays" class="sun-rays"></div>
+      <div id="clouds-container" class="clouds-container"></div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading" class="loading-screen">
+    <div class="loading-content">
+      <div class="loading-weather-icon">🌤️</div>
+      <div class="loading-spinner"></div>
+      <p>Loading weather...</p>
+    </div>
+  </div>
+
+  <!-- Error Toast -->
+  <div id="error-toast" class="toast error">
+    <span class="toast-icon">⚠️</span>
+    <span class="toast-message"></span>
+    <button class="toast-close">×</button>
+  </div>
+
+  <!-- Main App -->
+  <div class="app">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-emoji">🌤️</span>
+        <span class="logo-name">WeatherNow</span>
+      </div>
+      
+      <div class="header-actions">
+        <!-- Saved Locations Dropdown -->
+        <div class="saved-locations-wrapper">
+          <button id="locations-btn" class="icon-btn" title="Saved Locations">
+            📍
+            <span id="saved-count" class="badge-count">0</span>
+          </button>
+          <div id="locations-dropdown" class="dropdown locations-dropdown">
+            <div class="dropdown-header">
+              <span>Saved Locations</span>
+            </div>
+            <ul id="saved-locations-list" class="dropdown-list"></ul>
+          </div>
+        </div>
+        
+        <!-- Theme Toggle -->
+        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+          <span class="theme-icon-light">🌙</span>
+          <span class="theme-icon-dark">☀️</span>
+        </button>
+        
+        <!-- Unit Toggle -->
+        <button id="unit-toggle" class="unit-toggle">
+          <span class="unit-c active">°C</span>
+          <span class="unit-f">°F</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Search Bar -->
+    <div class="search-section">
+      <div class="search-container">
+        <div class="search-box">
+          <span class="search-icon">🔍</span>
+          <input type="text" id="search-input" placeholder="Search any city worldwide..." autocomplete="off">
+          <button id="location-btn" title="Use my location">📍</button>
+        </div>
+        <ul id="search-results" class="search-dropdown"></ul>
+      </div>
+    </div>
+
+    <!-- Main Weather Display -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="location-section">
+          <h1 id="city-name" class="city-name">
+            <span class="pin">📍</span>
+            <span class="name-text">Loading...</span>
+          </h1>
+          <p id="current-date" class="date">--</p>
+        </div>
+        
+        <div class="weather-main">
+          <div class="temperature-section">
+            <span id="current-temp" class="temp">--</span>
+            <span class="temp-symbol">°</span>
+          </div>
+          <img id="weather-icon" class="weather-icon-hero" src="" alt="">
+        </div>
+        
+        <p id="weather-description" class="description">--</p>
+        
+        <div class="weather-badges">
+          <span id="badge-weather" class="badge">--</span>
+          <span id="badge-feels" class="badge badge-secondary">Feels like --°</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- AQI Section -->
+    <section id="aqi-section" class="aqi-section">
+      <h2 class="section-title">🌬️ Air Quality Index</h2>
+      <div class="aqi-container">
+        <div class="aqi-main">
+          <div id="aqi-value" class="aqi-value">--</div>
+          <div id="aqi-label" class="aqi-label">--</div>
+        </div>
+        <div class="aqi-details">
+          <div class="aqi-item">
+            <span class="aqi-item-label">PM2.5</span>
+            <span id="pm25" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">PM10</span>
+            <span id="pm10" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">O₃</span>
+            <span id="o3" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">NO₂</span>
+            <span id="no2" class="aqi-item-value">--</span>
+          </div>
+        </div>
+        <div id="aqi-health" class="aqi-health">--</div>
+      </div>
+    </section>
+
+    <!-- Weather Details Grid -->
+    <section class="details-section">
+      <h2 class="section-title">Weather Details</h2>
+      <div class="details-grid">
+        <div class="detail-card">
+          <div class="detail-icon">💧</div>
+          <div class="detail-content">
+            <span class="detail-label">Humidity</span>
+            <span id="humidity" class="detail-value">--%</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">💨</div>
+          <div class="detail-content">
+            <span class="detail-label">Wind Speed</span>
+            <span id="wind-speed" class="detail-value">-- km/h</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">🌡️</div>
+          <div class="detail-content">
+            <span class="detail-label">Feels Like</span>
+            <span id="feels-like" class="detail-value">--°</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">👁️</div>
+          <div class="detail-content">
+            <span class="detail-label">Visibility</span>
+            <span id="visibility" class="detail-value">-- km</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">📊</div>
+          <div class="detail-content">
+            <span class="detail-label">Pressure</span>
+            <span id="pressure" class="detail-value">-- hPa</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">☀️</div>
+          <div class="detail-content">
+            <span class="detail-label">UV Index</span>
+            <span id="uv-index" class="detail-value">--</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">🌧️</div>
+          <div class="detail-content">
+            <span class="detail-label">Precipitation</span>
+            <span id="precipitation" class="detail-value">--%</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">📈</div>
+          <div class="detail-content">
+            <span class="detail-label">Dew Point</span>
+            <span id="dew-point" class="detail-value">--°</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Temperature Graph -->
+    <section class="graph-section">
+      <h2 class="section-title">📈 Temperature Trend</h2>
+      <div class="graph-container">
+        <canvas id="temp-graph"></canvas>
+      </div>
+    </section>
+
+    <!-- Sun & Moon -->
+    <section class="sun-section">
+      <h2 class="section-title">Sun & Moon</h2>
+      <div class="sun-cards">
+        <div class="sun-card">
+          <div class="sun-icon">🌅</div>
+          <div class="sun-info">
+            <span class="sun-label">Sunrise</span>
+            <span id="sunrise" class="sun-time">--:--</span>
+          </div>
+        </div>
+        <div class="sun-card">
+          <div class="sun-icon">🌇</div>
+          <div class="sun-info">
+            <span class="sun-label">Sunset</span>
+            <span id="sunset" class="sun-time">--:--</span>
+          </div>
+        </div>
+        <div class="sun-card">
+          <div class="sun-icon">🌙</div>
+          <div class="sun-info">
+            <span class="sun-label">Moon Phase</span>
+            <span id="moon-phase" class="sun-time">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7-Day Forecast -->
+    <section class="forecast-section">
+      <h2 class="section-title">📅 7-Day Forecast</h2>
+      <div id="forecast-grid" class="forecast-grid"></div>
+    </section>
+
+    <!-- Hourly Forecast -->
+    <section class="hourly-section">
+      <h2 class="section-title">⏰ Next 24 Hours</h2>
+      <div id="hourly-grid" class="hourly-grid"></div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Weather data by <a href="https://openweathermap.org/" target="_blank">OpenWeatherMap</a></p>
+      <p class="footer-note">Real-time updates • All features enabled</p>
+    </footer>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

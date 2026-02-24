@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+
+# Configuration (contains API keys - NEVER commit)
+js/config.js
+
+# Build outputs
+dist/
+build/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.*.local

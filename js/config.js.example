@@ -1,0 +1,43 @@
+/**
+ * Configuration file for Weather App
+ * 
+ * SETUP INSTRUCTIONS:
+ * 1. Copy this file and rename it to 'config.js'
+ * 2. Get your API key from https://openweathermap.org/api
+ * 3. Replace 'YOUR_API_KEY_HERE' with your actual API key
+ * 4. NEVER commit config.js to version control (add to .gitignore)
+ * 
+ * SECURITY BEST PRACTICES:
+ * - Keep config.js out of version control
+ * - Use environment variables in production
+ * - Implement rate limiting on your API key
+ * - Monitor API usage in OpenWeather dashboard
+ */
+
+export const CONFIG = {
+  // OpenWeatherMap API Key (One Call API 3.0)
+  API_KEY: 'YOUR_API_KEY_HERE',
+  
+  // API Endpoints
+  BASE_URL: 'https://api.openweathermap.org/data/2.5',
+  ONE_CALL_URL: 'https://api.openweathermap.org/data/3.0/onecall',
+  GEOCODING_URL: 'https://api.openweathermap.org/geo/1.0',
+  
+  // Units: 'metric' (Celsius) or 'imperial' (Fahrenheit)
+  UNITS: 'metric',
+  
+  // Language code
+  LANG: 'en',
+  
+  // App Settings
+  DEBOUNCE_DELAY: 300, // ms for search input debounce
+  CACHE_DURATION: 10 * 60 * 1000, // 10 minutes cache
+  MAX_SEARCH_RESULTS: 5,
+  
+  // Default location (London)
+  DEFAULT_LAT: 51.5074,
+  DEFAULT_LON: -0.1278,
+  DEFAULT_CITY: 'London'
+};
+
+export default CONFIG;
