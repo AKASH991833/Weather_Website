@@ -6,13 +6,24 @@
   <title>WeatherNow - Ultimate Weather Experience</title>
   
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+
   <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  
+
+  <!-- Stylesheets -->
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/animations.css">
+
+  <!-- PWA Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6366f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="WeatherNow">
 </head>
 <body class="theme-light">
   <!-- Dynamic Weather Background -->
@@ -20,8 +31,16 @@
     <div class="weather-effects">
       <div id="rain-container" class="rain-container"></div>
       <div id="snow-container" class="snow-container"></div>
+      <div id="fog-container" class="fog-container"></div>
+      <div id="wind-particles" class="wind-particles"></div>
       <div id="sun-rays" class="sun-rays"></div>
       <div id="clouds-container" class="clouds-container"></div>
+      <div id="dust-particles" class="dust-particles"></div>
+      <div id="heat-waves" class="heat-waves"></div>
+      <div id="aurora" class="aurora"></div>
+      <div id="shooting-stars" class="shooting-stars"></div>
+      <div id="lightning-flash" class="lightning-flash"></div>
+      <div id="lightning-bolt" class="lightning-bolt"></div>
     </div>
   </div>
 
@@ -51,6 +70,12 @@
       </div>
       
       <div class="header-actions">
+        <!-- Refresh Button -->
+        <button id="refresh-btn" class="icon-btn" title="Refresh Weather">🔄</button>
+
+        <!-- Export Button -->
+        <button id="export-btn" class="icon-btn" title="Export Weather">📤</button>
+
         <!-- Saved Locations Dropdown -->
         <div class="saved-locations-wrapper">
           <button id="locations-btn" class="icon-btn" title="Saved Locations">
@@ -64,13 +89,13 @@
             <ul id="saved-locations-list" class="dropdown-list"></ul>
           </div>
         </div>
-        
+
         <!-- Theme Toggle -->
         <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
           <span class="theme-icon-light">🌙</span>
           <span class="theme-icon-dark">☀️</span>
         </button>
-        
+
         <!-- Unit Toggle -->
         <button id="unit-toggle" class="unit-toggle">
           <span class="unit-c active">°C</span>
@@ -84,11 +109,13 @@
       <div class="search-container">
         <div class="search-box">
           <span class="search-icon">🔍</span>
-          <input type="text" id="search-input" placeholder="Search any city worldwide..." autocomplete="off">
+          <input type="text" id="search-input" placeholder="Search city, PIN code, coordinates, or country..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="search-results">
           <button id="location-btn" title="Use my location">📍</button>
+          <div id="search-loading" class="search-loading" style="display: none;">⏳</div>
         </div>
-        <ul id="search-results" class="search-dropdown"></ul>
+        <ul id="search-results" class="search-dropdown" role="listbox"></ul>
       </div>
+      <p class="search-hint">💡 Tip: Search by city name, PIN code (400001), coordinates (19.07, 72.87), or country (IN, US, UK)...</p>
     </div>
 
     <!-- Main Weather Display -->
@@ -209,7 +236,20 @@
             <span id="dew-point" class="detail-value">--°</span>
           </div>
         </div>
+        <div class="detail-card">
+          <div class="detail-icon">🧭</div>
+          <div class="detail-content">
+            <span class="detail-label">Wind Direction</span>
+            <div class="compass-container">
+              <div class="compass">
+                <span id="compass-arrow" class="compass-arrow">➤</span>
+              </div>
+              <span id="wind-direction-text" class="wind-direction">--</span>
+            </div>
+          </div>
+        </div>
       </div>
+      <p id="last-updated" class="last-updated">Last updated: --:--</p>
     </section>
 
     <!-- Temperature Graph -->
@@ -260,9 +300,111 @@
       <div id="hourly-grid" class="hourly-grid"></div>
     </section>
 
+    <!-- Weather Tips -->
+    <section class="tips-section">
+      <h2 class="section-title">💡 Weather Tips</h2>
+      <div class="tips-grid">
+        <div class="tip-card">
+          <span class="tip-icon">👕</span>
+          <div>
+            <span class="tip-label">Clothing</span>
+            <span id="tip-clothing" class="tip-value">--</span>
+          </div>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">🌲</span>
+          <div>
+            <span class="tip-label">Outdoor</span>
+            <span id="tip-outdoor" class="tip-value">--</span>
+          </div>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">🧴</span>
+          <div>
+            <span class="tip-label">Sun Protection</span>
+            <span id="tip-sun" class="tip-value">--</span>
+          </div>
+        </div>
+        <div class="tip-card">
+          <span class="tip-icon">☔</span>
+          <div>
+            <span class="tip-label">Rain Gear</span>
+            <span id="tip-rain" class="tip-value">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- UV Forecast -->
+    <section class="uv-section">
+      <h2 class="section-title">☀️ UV Forecast</h2>
+      <div id="uv-forecast-grid" class="uv-forecast-grid"></div>
+    </section>
+
+    <!-- Sun Position -->
+    <section class="sun-position-section">
+      <h2 class="section-title">🌞 Sun Position</h2>
+      <div class="sun-position-container">
+        <div class="sun-arc">
+          <div id="current-sun-pos" class="sun-position">☀️</div>
+        </div>
+        <div class="sun-markers">
+          <span id="sunrise-marker" class="marker">Sunrise: --:--</span>
+          <span id="sunset-marker" class="marker">Sunset: --:--</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Weather Alerts -->
+    <section id="weather-alerts" class="weather-alerts hidden">
+      <h2 class="section-title">⚠️ Weather Alerts</h2>
+      <div id="alerts-container" class="alerts-container"></div>
+    </section>
+
+    <!-- Comparison View -->
+    <div id="comparison-view" class="comparison-view hidden">
+      <div class="comparison-container">
+        <button class="close-btn" onclick="closeComparison()">×</button>
+        <h2 class="section-title">📊 City Comparison</h2>
+        <div class="comparison-content">
+          <div class="compare-city">
+            <h3 id="compare-city-1">--</h3>
+            <div id="compare-temp-1" class="compare-temp">--°</div>
+          </div>
+          <div id="compare-diff" class="comparison-diff">--</div>
+          <div class="compare-city">
+            <h3 id="compare-city-2">--</h3>
+            <div id="compare-temp-2" class="compare-temp">--°</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Panel -->
+    <div id="export-panel" class="export-panel">
+      <div class="export-content">
+        <button class="close-btn" onclick="closeExportPanel()">×</button>
+        <h2 class="section-title">📤 Export Weather</h2>
+        <div class="export-options">
+          <button class="export-option" onclick="printWeather()">
+            <span class="export-icon">🖨️</span>
+            <span>Print</span>
+          </button>
+          <button class="export-option" onclick="exportAsImage()">
+            <span class="export-icon">📷</span>
+            <span>Save as Image</span>
+          </button>
+          <button class="export-option" onclick="shareWeather()">
+            <span class="export-icon">📱</span>
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Footer -->
     <footer class="footer">
-      <p>Weather data by <a href="https://openweathermap.org/" target="_blank">OpenWeatherMap</a></p>
+      <!-- <p>Weather data by <a href="https://openweathermap.org/" target="_blank">OpenWeatherMap</a></p> -->
       <p class="footer-note">Real-time updates • All features enabled</p>
     </footer>
   </div>

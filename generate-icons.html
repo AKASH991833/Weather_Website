@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generate PWA Icons</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    p {
+      margin-bottom: 30px;
+      opacity: 0.9;
+    }
+    .icon-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 20px;
+      max-width: 600px;
+      margin-bottom: 30px;
+    }
+    .icon-item {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .icon-item canvas {
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+    .icon-label {
+      font-size: 12px;
+      opacity: 0.8;
+    }
+    button {
+      background: white;
+      color: #667eea;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 50px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    button:hover {
+      transform: scale(1.05);
+    }
+    .instructions {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 500px;
+      margin-top: 20px;
+    }
+    .instructions h3 {
+      margin-top: 0;
+    }
+    .instructions ol {
+      margin-bottom: 0;
+      padding-left: 20px;
+    }
+    .instructions li {
+      margin-bottom: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>🌤️ WeatherNow PWA Icons</h1>
+  <p>Right-click on any icon to save it, or click the button to download all</p>
+  
+  <div class="icon-preview" id="iconPreview"></div>
+  
+  <button onclick="downloadAll()">📥 Download All Icons</button>
+  
+  <div class="instructions">
+    <h3>How to use:</h3>
+    <ol>
+      <li>Click "Download All Icons" to get a ZIP file</li>
+      <li>Extract the ZIP to the <code>icons/</code> folder</li>
+      <li>Or right-click individual icons to save them</li>
+      <li>Refresh the page to see the icons in action</li>
+    </ol>
+  </div>
+
+  <script>
+    const sizes = [
+      { size: 72, name: 'icon-72x72.png' },
+      { size: 96, name: 'icon-96x96.png' },
+      { size: 128, name: 'icon-128x128.png' },
+      { size: 144, name: 'icon-144x144.png' },
+      { size: 152, name: 'icon-152x152.png' },
+      { size: 180, name: 'icon-180x180.png' },
+      { size: 192, name: 'icon-192x192.png' },
+      { size: 384, name: 'icon-384x384.png' },
+      { size: 512, name: 'icon-512x512.png' }
+    ];
+
+    function drawIcon(canvas, size) {
+      const ctx = canvas.getContext('2d');
+      const gradient = ctx.createLinearGradient(0, 0, size, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      // Background
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Cloud
+      ctx.fillStyle = 'white';
+      const cloudSize = size * 0.5;
+      const cloudX = size * 0.25;
+      const cloudY = size * 0.3;
+      
+      ctx.beginPath();
+      ctx.arc(cloudX, cloudY, cloudSize * 0.3, 0, Math.PI * 2);
+      ctx.arc(cloudX + cloudSize * 0.25, cloudY - cloudSize * 0.1, cloudSize * 0.35, 0, Math.PI * 2);
+      ctx.arc(cloudX + cloudSize * 0.5, cloudY, cloudSize * 0.3, 0, Math.PI * 2);
+      ctx.arc(cloudX + cloudSize * 0.25, cloudY + cloudSize * 0.1, cloudSize * 0.25, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Sun rays
+      const sunX = size * 0.65;
+      const sunY = size * 0.65;
+      const sunRadius = size * 0.15;
+      
+      // Sun circle
+      const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 2);
+      sunGradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
+      sunGradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
+      ctx.fillStyle = sunGradient;
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Sun core
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function init() {
+      const container = document.getElementById('iconPreview');
+      
+      sizes.forEach(({ size, name }) => {
+        const item = document.createElement('div');
+        item.className = 'icon-item';
+        
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        canvas.id = `icon-${size}`;
+        
+        const label = document.createElement('div');
+        label.className = 'icon-label';
+        label.textContent = `${size}x${size}`;
+        
+        drawIcon(canvas, size);
+        
+        item.appendChild(canvas);
+        item.appendChild(label);
+        container.appendChild(item);
+      });
+    }
+
+    async function downloadAll() {
+      // Create a simple JSZip-like download
+      for (const { size, name } of sizes) {
+        const canvas = document.getElementById(`icon-${size}`);
+        if (canvas) {
+          const link = document.createElement('a');
+          link.download = name;
+          link.href = canvas.toDataURL('image/png');
+          link.click();
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+      alert('All icons downloaded! Check your downloads folder.');
+    }
+
+    init();
+  </script>
+</body>
+</html>

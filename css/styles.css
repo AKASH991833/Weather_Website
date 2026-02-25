@@ -493,6 +493,24 @@ body {
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
 }
 
+.search-loading {
+  position: absolute;
+  right: 55px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  animation: pulse 1s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.1); }
+}
+
 .search-dropdown {
   position: absolute;
   top: calc(100% + 8px);
@@ -522,6 +540,30 @@ body {
   color: var(--text-secondary);
 }
 
+.search-dropdown li.search-result-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.search-dropdown li.search-result-item::before {
+  content: '📍';
+  font-size: 14px;
+  opacity: 0.6;
+}
+
+.search-dropdown li.no-results {
+  cursor: default;
+  color: var(--text-dim);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+.search-dropdown li.no-results::before {
+  content: '';
+}
+
 .search-dropdown li:last-child {
   border-bottom: none;
 }
@@ -531,11 +573,32 @@ body {
   color: white;
 }
 
+.search-dropdown li.focused {
+  background: var(--bg-card-hover);
+  color: white;
+  outline: 2px solid var(--primary);
+  outline-offset: -2px;
+}
+
 .search-dropdown li mark {
   background: var(--primary);
   color: white;
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+/* Search Hint */
+.search-hint {
+  font-size: 12px;
+  color: var(--text-dim);
+  text-align: center;
+  margin-top: 8px;
+  padding: 0 16px;
+}
+
+.search-hint strong {
+  color: var(--text-secondary);
+  font-weight: 600;
 }
 
 /* ============================================
@@ -1236,4 +1299,569 @@ body {
 .forecast-card,
 .hourly-card {
   animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ============================================
+   PWA Install Prompt
+   ============================================ */
+
+.install-prompt {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  max-width: 90%;
+  width: 400px;
+}
+
+.install-prompt.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.install-prompt-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.install-prompt-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.install-prompt-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.install-prompt-text strong {
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.install-prompt-text span {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.install-btn {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+}
+
+.install-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+}
+
+.install-dismiss {
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 8px;
+  transition: var(--transition);
+}
+
+.install-dismiss:hover {
+  color: var(--text-primary);
+}
+
+/* ============================================
+   Offline Indicator
+   ============================================ */
+
+.offline-indicator {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(-100px);
+  background: rgba(245, 158, 11, 0.95);
+  color: white;
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: var(--transition);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.offline-indicator.active {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+  visibility: visible;
+}
+
+.offline-icon {
+  font-size: 18px;
+}
+
+/* ============================================
+   Update Button
+   ============================================ */
+
+.update-btn {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  background: linear-gradient(135deg, var(--success), #34d399);
+  border: none;
+  color: white;
+  padding: 14px 20px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 9997;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  transition: var(--transition);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(20px);
+}
+
+.update-btn.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.update-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+}
+
+.update-icon {
+  font-size: 18px;
+  animation: spin 2s linear infinite;
+}
+
+/* ============================================
+   Weather Tips Section
+   ============================================ */
+.tips-section {
+  margin: 30px 0;
+}
+
+.tips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.tip-card {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: var(--transition);
+}
+
+.tip-card:hover {
+  background: var(--bg-card-hover);
+  transform: translateY(-2px);
+}
+
+.tip-icon {
+  font-size: 24px;
+}
+
+.tip-label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+}
+
+.tip-value {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ============================================
+   UV Forecast Section
+   ============================================ */
+.uv-section {
+  margin: 30px 0;
+}
+
+.uv-forecast-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 12px;
+}
+
+.uv-day {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  text-align: center;
+  transition: var(--transition);
+}
+
+.uv-day-name {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.uv-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.uv-level {
+  font-size: 11px;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  margin-top: 8px;
+  display: inline-block;
+  font-weight: 600;
+}
+
+.uv-level.low { background: var(--color-success); color: white; }
+.uv-level.moderate { background: #fbbf24; color: black; }
+.uv-level.high { background: #f97316; color: white; }
+.uv-level.very-high { background: #ef4444; color: white; }
+.uv-level.extreme { background: #7c3aed; color: white; }
+
+/* ============================================
+   Sun Position Section
+   ============================================ */
+.sun-position-section {
+  margin: 30px 0;
+}
+
+.sun-position-container {
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  position: relative;
+}
+
+.sun-arc {
+  height: 120px;
+  position: relative;
+  border-top: 2px dashed var(--border);
+  border-radius: 50% 50% 0 0;
+  margin-bottom: 20px;
+}
+
+.sun-position {
+  position: absolute;
+  font-size: 24px;
+  transform: translateX(-50%);
+  bottom: 0;
+  transition: all 0.5s ease;
+}
+
+.sun-markers {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+/* ============================================
+   Weather Alerts
+   ============================================ */
+.weather-alerts {
+  margin: 30px 0;
+  padding: 20px;
+  background: var(--bg-card);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.weather-alerts.hidden {
+  display: none;
+}
+
+.alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alert-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-card-hover);
+  border-radius: var(--radius-sm);
+  border-left: 4px solid var(--warning);
+}
+
+.alert-item.warning {
+  border-left-color: var(--warning);
+}
+
+.alert-item.severe {
+  border-left-color: var(--danger);
+}
+
+.alert-icon {
+  font-size: 24px;
+}
+
+.alert-content {
+  flex: 1;
+}
+
+.alert-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.alert-description {
+  font-size: 14px;
+  color: var(--text-secondary);
+}
+
+.alert-time {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 8px;
+}
+
+/* ============================================
+   Comparison View
+   ============================================ */
+.comparison-view {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.comparison-view.hidden {
+  display: none;
+}
+
+.comparison-container {
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 600px;
+  width: 90%;
+  position: relative;
+}
+
+.comparison-content {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  margin-top: 24px;
+}
+
+.compare-city {
+  text-align: center;
+}
+
+.compare-city h3 {
+  font-size: 18px;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.compare-temp {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.comparison-diff {
+  font-size: 16px;
+  color: var(--text-secondary);
+  padding: 12px 24px;
+  background: var(--bg-card-hover);
+  border-radius: var(--radius-full);
+}
+
+.comparison-diff.hotter {
+  color: var(--error);
+}
+
+.comparison-diff.colder {
+  color: var(--primary);
+}
+
+/* ============================================
+   Export Panel
+   ============================================ */
+.export-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 360px;
+  height: 100vh;
+  background: var(--bg-card);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid var(--border);
+  z-index: 9999;
+  transition: right 0.3s ease;
+}
+
+.export-panel.active {
+  right: 0;
+}
+
+.export-content {
+  padding: 24px;
+}
+
+.export-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.export-option {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: var(--bg-card-hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.export-option:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--primary);
+}
+
+.export-icon {
+  font-size: 24px;
+}
+
+/* ============================================
+   Compass
+   ============================================ */
+.compass-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.compass {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--bg-card-hover);
+  border: 2px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.compass-arrow {
+  font-size: 20px;
+  color: var(--primary);
+  transition: transform 0.3s ease;
+}
+
+.wind-direction {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ============================================
+   Last Updated
+   ============================================ */
+.last-updated {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 16px;
+}
+
+/* ============================================
+   Close Button
+   ============================================ */
+.close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: transparent;
+  border: none;
+  color: var(--text-dim);
+  font-size: 24px;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.close-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

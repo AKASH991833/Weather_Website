@@ -29,6 +29,8 @@ export function initElements() {
   elements.badgeFeels = document.getElementById('badge-feels');
   elements.humidity = document.getElementById('humidity');
   elements.windSpeed = document.getElementById('wind-speed');
+  elements.windDirectionText = document.getElementById('wind-direction-text');
+  elements.compassArrow = document.getElementById('compass-arrow');
   elements.feelsLike = document.getElementById('feels-like');
   elements.visibility = document.getElementById('visibility');
   elements.pressure = document.getElementById('pressure');
@@ -53,12 +55,25 @@ export function initElements() {
   elements.snowContainer = document.getElementById('snow-container');
   elements.sunRays = document.getElementById('sun-rays');
   elements.cloudsContainer = document.getElementById('clouds-container');
+  elements.refreshBtn = document.getElementById('refresh-btn');
+  elements.exportBtn = document.getElementById('export-btn');
 }
 
 export function hideLoading() {
   if (elements.loading) {
     elements.loading.classList.add('hidden');
     setTimeout(() => elements.loading.remove(), 300);
+  }
+}
+
+export function showLoading(message = 'Loading...') {
+  if (!elements.loading) return;
+  
+  // Show loading screen with custom message
+  elements.loading.classList.remove('hidden');
+  const loadingText = elements.loading.querySelector('p');
+  if (loadingText) {
+    loadingText.textContent = message;
   }
 }
 
@@ -183,8 +198,11 @@ function createSnow() {
 }
 
 export function updateAirQuality(airQuality) {
-  if (!elements.aqiSection || !airQuality) {
-    if (elements.aqiSection) elements.aqiSection.style.display = 'none';
+  if (!elements.aqiSection) return;
+  
+  // Hide AQI section if no data
+  if (!airQuality) {
+    elements.aqiSection.style.display = 'none';
     return;
   }
 
@@ -318,29 +336,61 @@ export function renderTemperatureGraph(hourly) {
   });
 }
 
+export function showSearchLoading(isLoading) {
+  const loadingEl = document.getElementById('search-loading');
+  const searchIcon = document.querySelector('.search-icon');
+  
+  if (loadingEl) {
+    loadingEl.style.display = isLoading ? 'flex' : 'none';
+  }
+  if (searchIcon) {
+    searchIcon.style.opacity = isLoading ? '0' : '0.6';
+  }
+  
+  const searchInput = document.getElementById('search-input');
+  if (searchInput) {
+    searchInput.setAttribute('aria-busy', isLoading.toString());
+  }
+}
+
 export function showSearchResults(results, query) {
   if (!elements.searchResults || !elements.searchInput) return;
   elements.searchResults.innerHTML = '';
+  focusedResultIndex = -1; // Reset focus
 
   if (!results || results.length === 0) {
-    hideSearchResults();
+    // Show "no results" message instead of hiding
+    const li = document.createElement('li');
+    li.className = 'no-results';
+    li.innerHTML = `🔍 No locations found for "<strong>${escapeHtml(query)}</strong>"`;
+    elements.searchResults.appendChild(li);
+    elements.searchResults.classList.add('active');
     return;
   }
 
   results.forEach(result => {
     const li = document.createElement('li');
+    const displayName = formatLocationName(result);
+
+    li.setAttribute('role', 'option');
     li.setAttribute('data-lat', result.lat);
     li.setAttribute('data-lon', result.lon);
-    li.setAttribute('data-name', result.name);
+    li.setAttribute('data-name', displayName);
+    li.className = 'search-result-item';
 
-    const displayName = formatLocationName(result);
     li.innerHTML = highlightMatch(displayName, query);
 
     li.addEventListener('click', () => {
-      elements.searchInput.value = displayName;
+      // Use the clicked item's data, not closure variable
+      const clickedName = li.getAttribute('data-name');
+      const clickedLat = parseFloat(li.getAttribute('data-lat'));
+      const clickedLon = parseFloat(li.getAttribute('data-lon'));
+      
+      elements.searchInput.value = clickedName;
       hideSearchResults();
+      
       const event = new CustomEvent('locationSelected', {
-        detail: { lat: result.lat, lon: result.lon, name: displayName }
+        detail: { lat: clickedLat, lon: clickedLon, name: clickedName }
       });
       document.dispatchEvent(event);
     });
@@ -349,6 +399,12 @@ export function showSearchResults(results, query) {
   });
 
   elements.searchResults.classList.add('active');
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }
 
 export function hideSearchResults() {
@@ -448,14 +504,35 @@ export function formatHour(timestamp) {
 
 export function formatLocationName(result) {
   const parts = [result.name];
-  if (result.state) parts.push(result.state);
-  if (result.country) parts.push(result.country);
+
+  // Add state if available AND different from city name
+  if (result.state && typeof result.state === 'string') {
+    const stateName = result.state.trim();
+    const cityName = result.name.trim();
+
+    // Don't add state if it's same as city name (e.g., "New York, New York")
+    if (stateName.toLowerCase() !== cityName.toLowerCase() && stateName.length > 0) {
+      parts.push(stateName);
+    }
+  }
+
+  // Add country code if available
+  if (result.country) {
+    parts.push(result.country);
+  }
+
+  // Add PIN code/ZIP if available
+  if (result.zip) {
+    parts.push(`PIN: ${result.zip}`);
+  }
+
   return parts.filter(Boolean).join(', ');
 }
 
 function highlightMatch(text, query) {
   if (!query) return text;
-  const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+  const escapedQuery = escapeRegex(query);
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
   return text.replace(regex, '<mark>$1</mark>');
 }
 
@@ -488,8 +565,8 @@ export function setupEventListeners(callbacks) {
 
   if (elements.searchInput) {
     elements.searchInput.addEventListener('input', (e) => callbacks.onSearch?.(e.target.value));
-    
-    // Handle Enter key - search like Google
+
+    // Handle Enter, Escape, and Arrow keys
     elements.searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -499,12 +576,10 @@ export function setupEventListeners(callbacks) {
         hideSearchResults();
         elements.searchInput.blur();
       }
-    });
-    
-    elements.searchInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        hideSearchResults();
-        elements.searchInput.blur();
+      // Arrow key navigation
+      if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        handleSearchResultNavigation(e.key);
       }
     });
   }
@@ -517,6 +592,46 @@ export function setupEventListeners(callbacks) {
   });
 }
 
+// Track currently focused search result
+let focusedResultIndex = -1;
+
+function handleSearchResultNavigation(direction) {
+  if (!elements.searchResults) return;
+  
+  const results = elements.searchResults.querySelectorAll('li.search-result-item');
+  if (results.length === 0) return;
+  
+  if (direction === 'ArrowDown') {
+    focusedResultIndex = Math.min(focusedResultIndex + 1, results.length - 1);
+  } else if (direction === 'ArrowUp') {
+    focusedResultIndex = Math.max(focusedResultIndex - 1, -1);
+  }
+  
+  // Remove focus from all
+  results.forEach(r => r.classList.remove('focused'));
+  
+  // Add focus to current
+  if (focusedResultIndex >= 0 && results[focusedResultIndex]) {
+    results[focusedResultIndex].classList.add('focused');
+    results[focusedResultIndex].scrollIntoView({ block: 'nearest' });
+  }
+}
+
+// Handle Enter key on focused result
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && focusedResultIndex >= 0) {
+    const focused = elements.searchResults?.querySelector('li.focused');
+    if (focused) {
+      e.preventDefault();
+      focused.click();
+    }
+  }
+});
+
+// Reset focus when results change
+const originalShowResults = showSearchResults;
+// This will be called automatically when showSearchResults is called
+
 export function setSearchValue(value) {
   if (elements.searchInput) elements.searchInput.value = value;
 }
@@ -528,6 +643,7 @@ export function getSearchValue() {
 export default {
   initElements,
   hideLoading,
+  showLoading,
   showError,
   hideError,
   updateCurrentWeather,
@@ -539,6 +655,7 @@ export default {
   renderTemperatureGraph,
   showSearchResults,
   hideSearchResults,
+  showSearchLoading,
   updateUnitToggle,
   updateSavedLocations,
   toggleLocationsDropdown,

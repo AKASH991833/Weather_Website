@@ -1,0 +1,844 @@
+/**
+ * WeatherNow - Advanced Weather Animations
+ * Pro-level realistic weather effects
+ */
+
+/* ============================================
+   Advanced Rain Animation
+   ============================================ */
+
+.rain-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.raindrop {
+  position: absolute;
+  width: 2px;
+  height: 20px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(174, 194, 224, 0.8) 50%,
+    rgba(174, 194, 224, 0.4) 100%
+  );
+  animation: rain-fall linear infinite;
+  opacity: 0.6;
+}
+
+.raindrop-heavy {
+  width: 3px;
+  height: 30px;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    rgba(100, 140, 180, 0.9) 50%,
+    rgba(100, 140, 180, 0.5) 100%
+  );
+  animation-duration: 0.4s;
+}
+
+.raindrop-light {
+  width: 1px;
+  height: 15px;
+  opacity: 0.4;
+  animation-duration: 0.8s;
+}
+
+@keyframes rain-fall {
+  0% {
+    transform: translateY(-20px) scaleY(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) scaleY(1.2);
+    opacity: 0;
+  }
+}
+
+/* Rain Splash Effect */
+.rain-splash {
+  position: absolute;
+  bottom: 0;
+  width: 4px;
+  height: 4px;
+  background: rgba(174, 194, 224, 0.6);
+  border-radius: 50%;
+  animation: splash 0.3s ease-out infinite;
+}
+
+@keyframes splash {
+  0% {
+    transform: scale(0);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Lightning Effect
+   ============================================ */
+
+.lightning-flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 9998;
+  animation: lightning-flash-animation 4s ease-in-out infinite;
+}
+
+@keyframes lightning-flash-animation {
+  0%, 89%, 100% {
+    opacity: 0;
+  }
+  90% {
+    opacity: 0.8;
+  }
+  91% {
+    opacity: 0;
+  }
+  92% {
+    opacity: 0.6;
+  }
+  93% {
+    opacity: 0;
+  }
+  94% {
+    opacity: 0.9;
+  }
+  96% {
+    opacity: 0;
+  }
+}
+
+.lightning-bolt {
+  position: fixed;
+  top: -100px;
+  width: 4px;
+  height: 200px;
+  background: linear-gradient(
+    to bottom,
+    #fff 0%,
+    #ffeb3b 50%,
+    transparent 100%
+  );
+  box-shadow: 0 0 20px #ffeb3b, 0 0 40px #fff;
+  transform: rotate(15deg);
+  opacity: 0;
+  z-index: 9997;
+  animation: lightning-bolt-animation 4s ease-in-out infinite;
+  filter: blur(1px);
+}
+
+.lightning-bolt::before,
+.lightning-bolt::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  width: 6px;
+  height: 80px;
+}
+
+.lightning-bolt::before {
+  top: 60px;
+  left: -8px;
+  transform: rotate(-30deg);
+}
+
+.lightning-bolt::after {
+  top: 120px;
+  left: 8px;
+  transform: rotate(25deg);
+}
+
+@keyframes lightning-bolt-animation {
+  0%, 89%, 100% {
+    opacity: 0;
+  }
+  90%, 92%, 94% {
+    opacity: 1;
+  }
+  91%, 93%, 95% {
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Fog/Mist Effect
+   ============================================ */
+
+.fog-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.fog-layer {
+  position: absolute;
+  width: 200%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.015' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  opacity: 0.3;
+  animation: fog-move 20s linear infinite;
+}
+
+.fog-layer:nth-child(1) {
+  top: 0;
+  opacity: 0.2;
+  animation-duration: 25s;
+}
+
+.fog-layer:nth-child(2) {
+  top: 30%;
+  opacity: 0.25;
+  animation-duration: 30s;
+  animation-direction: reverse;
+}
+
+.fog-layer:nth-child(3) {
+  top: 60%;
+  opacity: 0.2;
+  animation-duration: 35s;
+}
+
+@keyframes fog-move {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0%);
+  }
+}
+
+.fog-particle {
+  position: absolute;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.4) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: fog-particle-float linear infinite;
+}
+
+@keyframes fog-particle-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.5;
+  }
+  90% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: translate(100px, -100vh) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Wind Animation (Leaves & Particles)
+   ============================================ */
+
+.wind-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.wind-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 50%,
+    transparent 100%
+  );
+  border-radius: 2px;
+  animation: wind-blow linear infinite;
+}
+
+.wind-leaf {
+  position: absolute;
+  font-size: 14px;
+  color: rgba(139, 92, 246, 0.6);
+  animation: leaf-fall linear infinite;
+}
+
+@keyframes wind-blow {
+  0% {
+    transform: translateX(-100vw);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(100vw);
+    opacity: 0;
+  }
+}
+
+@keyframes leaf-fall {
+  0% {
+    transform: translate(-100px, -100px) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(calc(100vw + 100px), 100vh) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Sunny Sky Rays Effect
+   ============================================ */
+
+.sun-rays {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.sun-ray {
+  position: absolute;
+  top: -50%;
+  left: 50%;
+  width: 4px;
+  height: 150%;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 223, 100, 0.8) 0%,
+    rgba(255, 223, 100, 0.2) 50%,
+    transparent 100%
+  );
+  transform-origin: top center;
+  animation: sun-ray-rotate 20s linear infinite;
+  filter: blur(2px);
+}
+
+@keyframes sun-ray-rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sun-glow {
+  position: absolute;
+  top: -100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 223, 100, 0.3) 0%,
+    rgba(255, 223, 100, 0.1) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: sun-pulse 3s ease-in-out infinite;
+}
+
+@keyframes sun-pulse {
+  0%, 100% {
+    transform: translateX(-50%) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateX(-50%) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* ============================================
+   Enhanced Snow Animation
+   ============================================ */
+
+.snow-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.snowflake {
+  position: absolute;
+  color: white;
+  font-weight: 300;
+  animation: snow-fall linear infinite;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.8));
+}
+
+.snowflake-heavy {
+  font-size: 1.5em;
+  opacity: 0.9;
+}
+
+.snowflake-light {
+  font-size: 0.8em;
+  opacity: 0.6;
+}
+
+@keyframes snow-fall {
+  0% {
+    transform: translateY(-10px) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+/* Snow Accumulation Effect */
+.snow-accumulation {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(255, 255, 255, 0.4) 100%
+  );
+  border-radius: 50% 50% 0 0;
+  animation: accumulate 60s linear infinite;
+}
+
+@keyframes accumulate {
+  0%, 100% {
+    height: 0;
+  }
+  50% {
+    height: 20px;
+  }
+}
+
+/* ============================================
+   Cloud Movement Animation
+   ============================================ */
+
+.clouds-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.cloud {
+  position: absolute;
+  font-size: 100px;
+  color: rgba(255, 255, 255, 0.15);
+  animation: cloud-drift linear infinite;
+  filter: blur(8px);
+}
+
+.cloud-fast {
+  animation-duration: 20s;
+}
+
+.cloud-slow {
+  animation-duration: 40s;
+}
+
+@keyframes cloud-drift {
+  0% {
+    transform: translateX(-200px);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.3;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(calc(100vw + 200px));
+    opacity: 0;
+  }
+}
+
+/* Fluffy Clouds */
+.fluffy-cloud {
+  position: absolute;
+  background: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.2) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(20px);
+  animation: fluffy-drift linear infinite;
+}
+
+@keyframes fluffy-drift {
+  from {
+    transform: translateX(-300px);
+  }
+  to {
+    transform: translateX(calc(100vw + 300px));
+  }
+}
+
+/* ============================================
+   Dust Particles (Clear Weather)
+   ============================================ */
+
+.dust-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.dust {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  background: radial-gradient(
+    circle,
+    rgba(255, 223, 100, 0.6) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  animation: dust-float linear infinite;
+}
+
+@keyframes dust-float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(50px, -50px) scale(0.5);
+  }
+}
+
+/* ============================================
+   Hail Animation
+   ============================================ */
+
+.hail-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hailstone {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.9) 0%,
+    rgba(200, 220, 255, 0.6) 100%
+  );
+  border-radius: 50%;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  animation: hail-fall linear infinite;
+}
+
+@keyframes hail-fall {
+  0% {
+    transform: translateY(-20px) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(720deg);
+    opacity: 0.8;
+  }
+}
+
+/* ============================================
+   Weather Transition Effects
+   ============================================ */
+
+.weather-transition {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-gradient);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.weather-transition.active {
+  opacity: 1;
+}
+
+/* Fade Transition */
+.transition-fade {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* Slide Transition */
+.transition-slide {
+  animation: slideIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+/* ============================================
+   Rainbow Effect (After Rain)
+   ============================================ */
+
+.rainbow {
+  position: absolute;
+  width: 600px;
+  height: 300px;
+  border-radius: 50%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 0, 0, 0.15) 0%,
+    rgba(255, 127, 0, 0.15) 14%,
+    rgba(255, 255, 0, 0.15) 28%,
+    rgba(0, 255, 0, 0.15) 42%,
+    rgba(0, 0, 255, 0.15) 57%,
+    rgba(75, 0, 130, 0.15) 71%,
+    rgba(148, 0, 211, 0.15) 85%,
+    transparent 100%
+  );
+  filter: blur(10px);
+  opacity: 0;
+  animation: rainbow-appear 3s ease forwards;
+}
+
+@keyframes rainbow-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ============================================
+   Heat Waves (Hot Weather)
+   ============================================ */
+
+.heat-waves {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.heat-wave {
+  position: absolute;
+  width: 100%;
+  height: 100px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 100, 50, 0.1) 0%,
+    transparent 100%
+  );
+  animation: heat-shimmer 2s ease-in-out infinite;
+}
+
+@keyframes heat-shimmer {
+  0%, 100% {
+    transform: translateY(0) scaleY(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translateY(-20px) scaleY(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* ============================================
+   Bubble Effect (Rain)
+   ============================================ */
+
+.rain-bubble {
+  position: absolute;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    rgba(255, 255, 255, 0.8) 0%,
+    rgba(174, 194, 224, 0.4) 100%
+  );
+  border-radius: 50%;
+  animation: bubble-rise 2s ease-in infinite;
+}
+
+@keyframes bubble-rise {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ============================================
+   Aurora Effect (Night Clear)
+   ============================================ */
+
+.aurora {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 300px;
+  background: linear-gradient(
+    180deg,
+    rgba(0, 255, 100, 0.2) 0%,
+    rgba(0, 200, 255, 0.1) 50%,
+    transparent 100%
+  );
+  filter: blur(20px);
+  animation: aurora-wave 10s ease-in-out infinite;
+}
+
+@keyframes aurora-wave {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scaleY(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scaleY(1.2);
+  }
+}
+
+/* ============================================
+   Shooting Star (Night Clear)
+   ============================================ */
+
+.shooting-star {
+  position: absolute;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(
+    to right,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 1) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: rotate(-45deg);
+  animation: shoot 3s ease-in-out infinite;
+  opacity: 0;
+}
+
+@keyframes shoot {
+  0%, 90%, 100% {
+    opacity: 0;
+    transform: translateX(0) translateY(0) rotate(-45deg);
+  }
+  95% {
+    opacity: 1;
+    transform: translateX(-300px) translateY(300px) rotate(-45deg);
+  }
+}
+
+/* ============================================
+   Responsive Adjustments
+   ============================================ */
+
+@media (max-width: 768px) {
+  .lightning-bolt {
+    display: none;
+  }
+  
+  .fog-layer {
+    opacity: 0.15;
+  }
+  
+  .sun-ray {
+    width: 2px;
+  }
+  
+  .raindrop-heavy {
+    width: 2px;
+    height: 20px;
+  }
+}
+
+/* ============================================
+   Performance Optimization
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .raindrop,
+  .snowflake,
+  .cloud,
+  .fog-layer,
+  .wind-line,
+  .lightning-flash,
+  .sun-ray {
+    animation: none !important;
+    opacity: 0.5;
+  }
+}
+
+/* Hardware Acceleration */
+.raindrop,
+.snowflake,
+.cloud,
+.fog-layer,
+.wind-line,
+.leaf {
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}

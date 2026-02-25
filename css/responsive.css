@@ -290,6 +290,49 @@
   .error-toast.active {
     transform: translateY(0);
   }
+  
+  /* New features responsive */
+  .comparison-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .export-options {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .uv-forecast-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .tips-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .install-prompt {
+    width: 90%;
+    bottom: 80px;
+  }
+  
+  .install-prompt-content {
+    flex-wrap: wrap;
+  }
+  
+  .install-prompt-text {
+    flex-basis: 100%;
+  }
+  
+  .sun-timeline {
+    padding: 20px 10px;
+  }
+  
+  .sun-arc {
+    height: 80px;
+  }
+  
+  .wind-compass {
+    width: 100px;
+    height: 100px;
+  }
 }
 
 /* ============================================
