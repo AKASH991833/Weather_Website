@@ -1,30 +1,36 @@
 /**
  * WeatherNow - Service Worker
- * PWA Support: Offline caching, background sync
+ * GitHub Pages Compatible - Relative Paths
  */
 
-const CACHE_NAME = 'weathernow-v9';
+const CACHE_NAME = 'weathernow-v10';
 const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/css/components.css',
-  '/css/responsive.css',
-  '/css/animations.css',
-  '/css/ui-enhanced.css',
-  '/css/animations-enhanced.css',
-  '/css/responsive-enhanced.css',
-  '/js/main.js',
-  '/js/api.js',
-  '/js/ui.js',
-  '/js/config.js',
-  '/js/features.js',
-  '/js/pwa.js',
-  '/js/animations.js',
-  '/js/weather-api.js',
-  '/js/location-api.js',
-  '/js/location-display.js',
-  '/manifest.json'
+  './',
+  './index.html',
+  './css/styles.css',
+  './css/components.css',
+  './css/responsive.css',
+  './css/animations.css',
+  './css/ui-enhanced.css',
+  './css/animations-enhanced.css',
+  './css/responsive-enhanced.css',
+  './css/accessibility.css',
+  './css/alerts.css',
+  './js/main.js',
+  './js/api.js',
+  './js/ui.js',
+  './js/config.js',
+  './js/features.js',
+  './js/pwa.js',
+  './js/animations.js',
+  './js/weather-api.js',
+  './js/location-api.js',
+  './js/location-display.js',
+  './js/alerts.js',
+  './js/notifications.js',
+  './js/advanced-features.js',
+  './js/error-boundary.js',
+  './manifest.json'
 ];
 
 // Install event - cache static assets
@@ -32,11 +38,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[ServiceWorker] Caching static assets');
+        console.log('[SW] Caching static assets');
         return cache.addAll(STATIC_ASSETS);
       })
       .catch((err) => {
-        console.error('[ServiceWorker] Cache failed:', err);
+        console.error('[SW] Cache failed:', err);
       })
   );
   self.skipWaiting();
@@ -59,14 +65,13 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
-  // Skip non-GET requests
   if (event.request.method !== 'GET') return;
 
-  // Skip external requests (APIs, CDNs)
   const url = new URL(event.request.url);
+  
+  // Skip external requests (APIs, CDNs) - use cache-first for CDNs
   if (url.origin !== location.origin) {
-    // Cache CDN assets (Chart.js, fonts)
-    if (url.hostname.includes('googleapis') || 
+    if (url.hostname.includes('googleapis') ||
         url.hostname.includes('jsdelivr') ||
         url.hostname.includes('openweathermap')) {
       event.respondWith(cacheFirstStrategy(event.request));
@@ -89,7 +94,7 @@ async function networkFirstStrategy(request) {
     return networkResponse;
   } catch (error) {
     const cachedResponse = await caches.match(request);
-    return cachedResponse || caches.match('/index.html');
+    return cachedResponse || caches.match('./index.html');
   }
 }
 
@@ -119,16 +124,15 @@ self.addEventListener('sync', (event) => {
 });
 
 async function syncWeatherData() {
-  console.log('[ServiceWorker] Syncing weather data...');
-  // This would trigger a background weather update
+  console.log('[SW] Syncing weather data...');
 }
 
 // Push notifications
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data?.text() || 'Weather update available',
-    icon: '/icons/icon-192x192.png',
-    badge: '/icons/icon-72x72.png',
+    icon: undefined,
+    badge: undefined,
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -148,10 +152,10 @@ self.addEventListener('push', (event) => {
 // Notification click handler
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
-  
+
   if (event.action === 'view') {
     event.waitUntil(
-      clients.openWindow('/')
+      clients.openWindow('./')
     );
   }
 });

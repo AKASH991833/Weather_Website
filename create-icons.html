@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Creating Icons...</title>
+</head>
+<body>
+  <h1>Generating PWA Icons...</h1>
+  <p>Please wait while icons are being created...</p>
+  
+  <script>
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    
+    // Create a simple colored icon with weather symbol
+    function createIcon(size) {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, 0, size);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+      
+      // Sun circle
+      const sunSize = size * 0.25;
+      const sunX = size * 0.6;
+      const sunY = size * 0.35;
+      ctx.fillStyle = '#FFD700';
+      ctx.beginPath();
+      ctx.arc(sunX, sunY, sunSize, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Sun rays
+      ctx.strokeStyle = '#FFD700';
+      ctx.lineWidth = size * 0.03;
+      ctx.lineCap = 'round';
+      const rays = 8;
+      for (let i = 0; i < rays; i++) {
+        const angle = (i / rays) * Math.PI * 2;
+        const rayStart = sunSize + size * 0.05;
+        const rayEnd = sunSize + size * 0.12;
+        ctx.beginPath();
+        ctx.moveTo(sunX + Math.cos(angle) * rayStart, sunY + Math.sin(angle) * rayStart);
+        ctx.lineTo(sunX + Math.cos(angle) * rayEnd, sunY + Math.sin(angle) * rayEnd);
+        ctx.stroke();
+      }
+      
+      // Cloud
+      const cloudX = size * 0.35;
+      const cloudY = size * 0.55;
+      const cloudScale = size / 512;
+      ctx.fillStyle = '#FFFFFF';
+      ctx.beginPath();
+      ctx.arc(cloudX, cloudY, 50 * cloudScale, 0, Math.PI * 2);
+      ctx.arc(cloudX + 40 * cloudScale, cloudY - 10 * cloudScale, 60 * cloudScale, 0, Math.PI * 2);
+      ctx.arc(cloudX + 80 * cloudScale, cloudY, 50 * cloudScale, 0, Math.PI * 2);
+      ctx.arc(cloudX + 40 * cloudScale, cloudY + 10 * cloudScale, 45 * cloudScale, 0, Math.PI * 2);
+      ctx.fill();
+      
+      return canvas.toDataURL('image/png');
+    }
+    
+    // Generate and download all icons
+    async function generateIcons() {
+      const JSZip = await loadJSZip();
+      const zip = new JSZip();
+      
+      for (const size of sizes) {
+        const dataUrl = createIcon(size);
+        const base64Data = dataUrl.split(',')[1];
+        zip.file(`icon-${size}x${size}.png`, base64Data, { base64: true });
+        console.log(`Generated icon-${size}x${size}.png`);
+      }
+      
+      // Generate and save
+      const content = await zip.generateAsync({ type: 'blob' });
+      
+      // Extract to icons folder
+      const files = await zip.folder('.').forEachAsync((file, path) => {
+        return file.async('blob').then(blob => {
+          downloadFile(blob, path);
+        });
+      });
+      
+      // Download ZIP
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'icons.zip';
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      console.log('Icons generated! Check downloads folder.');
+      document.body.innerHTML = '<h1>✅ Icons Generated!</h1><p>Download the ZIP and extract to icons/ folder</p><p><a href="index.html">← Back to Weather App</a></p>';
+    }
+    
+    function downloadFile(blob, filename) {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    
+    function loadJSZip() {
+      return new Promise((resolve, reject) => {
+        if (window.JSZip) {
+          resolve(window.JSZip);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
+        script.onload = () => resolve(window.JSZip);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
+    
+    // Auto-generate on load
+    generateIcons();
+  </script>
+</body>
+</html>

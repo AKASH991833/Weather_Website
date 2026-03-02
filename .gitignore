@@ -38,10 +38,6 @@ temp/
 Thumbs.db
 desktop.ini
 
-# PWA Icons (generated)
-icons/*.png
-!icons/.gitkeep
-
 # Cache files
 .cache/
 *.cache

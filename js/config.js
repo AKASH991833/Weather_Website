@@ -1,31 +1,23 @@
 /**
  * WeatherNow - Configuration File
- *
- * SECURITY: API Key is loaded from environment variable
- * DO NOT commit API key to version control!
+ * GitHub Pages Compatible - Direct OpenWeather API Calls
  *
  * SETUP:
- * 1. Copy config.example.js to config.local.js
- * 2. Add your API key in config.local.js
- * 3. config.local.js is gitignored (safe)
+ * 1. Get free API key from https://openweathermap.org/api
+ * 2. Replace 'YOUR_API_KEY_HERE' with your actual API key
+ * 3. Deploy to GitHub Pages
  */
 
-// Default configuration (safe to commit)
-const DEFAULT_CONFIG = {
-  // OpenWeatherMap API Key (placeholder - will be overridden)
-  API_KEY: 'YOUR_API_KEY_HERE',
+const CONFIG = {
+  // OpenWeatherMap API Key - REPLACE WITH YOUR KEY
+  // Get free key: https://openweathermap.org/api
+  API_KEY: '82ccd04c1fea51e3ba067b31a39eab69',
 
-  // API Endpoints
+  // API Endpoints - Direct OpenWeatherMap API (GitHub Pages compatible)
   BASE_URL: 'https://api.openweathermap.org/data/2.5',
-  ONE_CALL_URL: 'https://api.openweathermap.org/data/3.0/onecall',
   GEOCODING_URL: 'https://api.openweathermap.org/geo/1.0',
   AIR_POLLUTION_URL: 'https://api.openweathermap.org/data/2.5/air_pollution',
-  
-  // Backend Proxy Server (for secure API calls)
-  // Note: Currently using direct API calls (free tier)
-  // For production: Setup backend proxy for security
-  API_BASE_URL: 'https://api.openweathermap.org',
-  
+
   // Units: 'metric' (Celsius) or 'imperial' (Fahrenheit)
   UNITS: 'metric',
 
@@ -33,16 +25,16 @@ const DEFAULT_CONFIG = {
   LANG: 'en',
 
   // App Settings
-  DEBOUNCE_DELAY: 300, // ms for search input debounce
-  CACHE_DURATION: 10 * 60 * 1000, // 10 minutes cache
+  DEBOUNCE_DELAY: 300,
+  CACHE_DURATION: 10 * 60 * 1000,
   MAX_SEARCH_RESULTS: 5,
 
-  // Default location (London)
+  // Default location (can be changed)
   DEFAULT_LAT: 51.5074,
   DEFAULT_LON: -0.1278,
   DEFAULT_CITY: 'London',
 
-  // Rate limiting
+  // Rate limiting (requests per minute)
   RATE_LIMIT: {
     WEATHER: 60,
     CURRENT_WEATHER: 60,
@@ -61,32 +53,6 @@ const DEFAULT_CONFIG = {
     TIMEOUT: 'Request timed out. Please try again.'
   }
 };
-
-// Try to load local config (with API key) if it exists
-let CONFIG = { ...DEFAULT_CONFIG };
-
-try {
-  // Check if local config exists (it won't on GitHub, only in local dev)
-  if (typeof window !== 'undefined') {
-    // Browser environment - check for config.local.js
-    // This will fail gracefully if file doesn't exist
-    try {
-      const localConfig = await import('./config.local.js');
-      if (localConfig.default) {
-        CONFIG = { ...DEFAULT_CONFIG, ...localConfig.default };
-        console.log('✅ Loaded local configuration (API key from config.local.js)');
-      }
-    } catch (e) {
-      // config.local.js doesn't exist or not needed
-      console.log('ℹ️ Using default configuration (no config.local.js)');
-    }
-  }
-} catch (error) {
-  console.log('⚠️ Using default configuration');
-}
-
-// Export configuration
-export default CONFIG;
 
 // Country names mapping
 export const COUNTRY_NAMES = {

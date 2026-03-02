@@ -6,198 +6,174 @@
   <title>Generate PWA Icons</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      margin: 0;
-      padding: 20px;
-    }
-    h1 {
-      margin-bottom: 10px;
-    }
-    p {
-      margin-bottom: 30px;
-      opacity: 0.9;
-    }
-    .icon-preview {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-      gap: 20px;
+      font-family: system-ui, -apple-system, sans-serif;
       max-width: 600px;
-      margin-bottom: 30px;
-    }
-    .icon-item {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
+      margin: 40px auto;
       padding: 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      min-height: 100vh;
     }
-    .icon-item canvas {
-      border-radius: 8px;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    .container {
+      background: rgba(255,255,255,0.1);
+      padding: 30px;
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
     }
-    .icon-label {
-      font-size: 12px;
-      opacity: 0.8;
-    }
-    button {
+    h1 { margin-top: 0; }
+    .btn {
       background: white;
       color: #667eea;
       border: none;
-      padding: 14px 28px;
-      border-radius: 50px;
+      padding: 12px 24px;
+      border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
-      transition: transform 0.2s;
+      margin: 10px 5px;
     }
-    button:hover {
-      transform: scale(1.05);
-    }
-    .instructions {
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 20px;
-      max-width: 500px;
+    .btn:hover { opacity: 0.9; }
+    .icon-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      gap: 15px;
       margin-top: 20px;
     }
-    .instructions h3 {
-      margin-top: 0;
+    .icon-item {
+      background: white;
+      border-radius: 8px;
+      padding: 10px;
+      text-align: center;
+      color: #333;
     }
-    .instructions ol {
-      margin-bottom: 0;
-      padding-left: 20px;
+    .icon-item img {
+      width: 100%;
+      height: auto;
     }
-    .instructions li {
-      margin-bottom: 8px;
+    .icon-item span {
+      display: block;
+      font-size: 12px;
+      margin-top: 5px;
     }
+    .status {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 8px;
+    }
+    .success { background: rgba(76, 175, 80, 0.3); }
+    .error { background: rgba(244, 67, 54, 0.3); }
   </style>
 </head>
 <body>
-  <h1>🌤️ WeatherNow PWA Icons</h1>
-  <p>Right-click on any icon to save it, or click the button to download all</p>
-  
-  <div class="icon-preview" id="iconPreview"></div>
-  
-  <button onclick="downloadAll()">📥 Download All Icons</button>
-  
-  <div class="instructions">
-    <h3>How to use:</h3>
-    <ol>
-      <li>Click "Download All Icons" to get a ZIP file</li>
-      <li>Extract the ZIP to the <code>icons/</code> folder</li>
-      <li>Or right-click individual icons to save them</li>
-      <li>Refresh the page to see the icons in action</li>
-    </ol>
+  <div class="container">
+    <h1>🌤️ PWA Icon Generator</h1>
+    <p>Click the button below to generate all required PWA icon sizes.</p>
+    
+    <button class="btn" onclick="generateIcons()">🎨 Generate Icons</button>
+    <button class="btn" onclick="downloadAll()">📥 Download All</button>
+    
+    <div id="preview" class="icon-preview"></div>
+    <div id="status" class="status" style="display:none;"></div>
   </div>
 
   <script>
-    const sizes = [
-      { size: 72, name: 'icon-72x72.png' },
-      { size: 96, name: 'icon-96x96.png' },
-      { size: 128, name: 'icon-128x128.png' },
-      { size: 144, name: 'icon-144x144.png' },
-      { size: 152, name: 'icon-152x152.png' },
-      { size: 180, name: 'icon-180x180.png' },
-      { size: 192, name: 'icon-192x192.png' },
-      { size: 384, name: 'icon-384x384.png' },
-      { size: 512, name: 'icon-512x512.png' }
-    ];
+    const sizes = [72, 96, 128, 144, 152, 192, 384, 512];
+    const generatedIcons = {};
 
-    function drawIcon(canvas, size) {
-      const ctx = canvas.getContext('2d');
-      const gradient = ctx.createLinearGradient(0, 0, size, size);
-      gradient.addColorStop(0, '#667eea');
-      gradient.addColorStop(1, '#764ba2');
+    async function generateIcons() {
+      const status = document.getElementById('status');
+      const preview = document.getElementById('preview');
+      preview.innerHTML = '';
       
-      // Background
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, size, size);
-      
-      // Cloud
-      ctx.fillStyle = 'white';
-      const cloudSize = size * 0.5;
-      const cloudX = size * 0.25;
-      const cloudY = size * 0.3;
-      
-      ctx.beginPath();
-      ctx.arc(cloudX, cloudY, cloudSize * 0.3, 0, Math.PI * 2);
-      ctx.arc(cloudX + cloudSize * 0.25, cloudY - cloudSize * 0.1, cloudSize * 0.35, 0, Math.PI * 2);
-      ctx.arc(cloudX + cloudSize * 0.5, cloudY, cloudSize * 0.3, 0, Math.PI * 2);
-      ctx.arc(cloudX + cloudSize * 0.25, cloudY + cloudSize * 0.1, cloudSize * 0.25, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Sun rays
-      const sunX = size * 0.65;
-      const sunY = size * 0.65;
-      const sunRadius = size * 0.15;
-      
-      // Sun circle
-      const sunGradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, sunRadius * 2);
-      sunGradient.addColorStop(0, 'rgba(255, 200, 100, 0.8)');
-      sunGradient.addColorStop(1, 'rgba(255, 200, 100, 0)');
-      ctx.fillStyle = sunGradient;
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius * 2, 0, Math.PI * 2);
-      ctx.fill();
-      
-      // Sun core
-      ctx.fillStyle = '#FFD700';
-      ctx.beginPath();
-      ctx.arc(sunX, sunY, sunRadius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function init() {
-      const container = document.getElementById('iconPreview');
-      
-      sizes.forEach(({ size, name }) => {
-        const item = document.createElement('div');
-        item.className = 'icon-item';
+      try {
+        // Fetch the SVG
+        const response = await fetch('icons/icon.svg');
+        const svgText = await response.text();
         
-        const canvas = document.createElement('canvas');
-        canvas.width = size;
-        canvas.height = size;
-        canvas.id = `icon-${size}`;
+        for (const size of sizes) {
+          // Create canvas
+          const canvas = document.createElement('canvas');
+          canvas.width = size;
+          canvas.height = size;
+          const ctx = canvas.getContext('2d');
+          
+          // Create image from SVG
+          const img = new Image();
+          const svgBlob = new Blob([svgText], { type: 'image/svg+xml' });
+          const url = URL.createObjectURL(svgBlob);
+          
+          await new Promise((resolve) => {
+            img.onload = () => {
+              ctx.drawImage(img, 0, 0, size, size);
+              URL.revokeObjectURL(url);
+              resolve();
+            };
+            img.src = url;
+          });
+          
+          // Convert to PNG
+          const pngDataUrl = canvas.toDataURL('image/png');
+          generatedIcons[size] = pngDataUrl;
+          
+          // Show preview
+          const item = document.createElement('div');
+          item.className = 'icon-item';
+          item.innerHTML = `
+            <img src="${pngDataUrl}" alt="${size}x${size}">
+            <span>${size}x${size}</span>
+          `;
+          preview.appendChild(item);
+        }
         
-        const label = document.createElement('div');
-        label.className = 'icon-label';
-        label.textContent = `${size}x${size}`;
+        status.textContent = '✅ All icons generated successfully!';
+        status.className = 'status success';
+        status.style.display = 'block';
         
-        drawIcon(canvas, size);
-        
-        item.appendChild(canvas);
-        item.appendChild(label);
-        container.appendChild(item);
-      });
+      } catch (error) {
+        status.textContent = '❌ Error generating icons: ' + error.message;
+        status.className = 'status error';
+        status.style.display = 'block';
+      }
     }
 
     async function downloadAll() {
-      // Create a simple JSZip-like download
-      for (const { size, name } of sizes) {
-        const canvas = document.getElementById(`icon-${size}`);
-        if (canvas) {
-          const link = document.createElement('a');
-          link.download = name;
-          link.href = canvas.toDataURL('image/png');
-          link.click();
-          await new Promise(resolve => setTimeout(resolve, 100));
-        }
+      if (Object.keys(generatedIcons).length === 0) {
+        alert('Please generate icons first!');
+        return;
       }
-      alert('All icons downloaded! Check your downloads folder.');
+
+      // Create JSZip instance (load from CDN)
+      const JSZip = await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js');
+      const zip = new JSZip();
+      
+      for (const [size, dataUrl] of Object.entries(generatedIcons)) {
+        const base64Data = dataUrl.split(',')[1];
+        zip.file(`icon-${size}x${size}.png`, base64Data, { base64: true });
+      }
+      
+      const content = await zip.generateAsync({ type: 'blob' });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'pwa-icons.zip';
+      a.click();
+      URL.revokeObjectURL(url);
     }
 
-    init();
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        if (window.JSZip) {
+          resolve(window.JSZip);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.onload = () => resolve(window.JSZip);
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
   </script>
 </body>
 </html>

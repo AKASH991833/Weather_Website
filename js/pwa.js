@@ -124,10 +124,10 @@ function trackInstall() {
 async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      swRegistration = await navigator.serviceWorker.register('/sw.js', {
-        scope: '/'
+      swRegistration = await navigator.serviceWorker.register('./sw.js', {
+        scope: './'
       });
-      
+
       console.log('[PWA] Service Worker registered:', swRegistration.scope);
 
       // Check for updates
