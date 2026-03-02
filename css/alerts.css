@@ -1,0 +1,362 @@
+/* ============================================
+   WeatherNow - Weather Alerts Styles
+   ============================================ */
+
+.weather-alerts {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 24px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideIn 0.5s ease-out;
+}
+
+.weather-alerts.hidden {
+  display: none;
+}
+
+.weather-alerts.active {
+  animation: pulse-alert 2s ease-in-out infinite;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-alert {
+  0%, 100% {
+    box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+  }
+  50% {
+    box-shadow: 0 20px 70px rgba(239, 68, 68, 0.3);
+  }
+}
+
+.alerts-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.alert-card {
+  background: rgba(30, 30, 40, 0.95);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  animation: slideInAlert 0.5s ease-out backwards;
+  transition: all 0.3s ease;
+}
+
+.alert-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes slideInAlert {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.alert-header {
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  position: relative;
+  overflow: hidden;
+}
+
+.alert-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.alert-icon {
+  font-size: 40px;
+  flex-shrink: 0;
+  animation: bounce-alert 1s ease-in-out infinite;
+}
+
+@keyframes bounce-alert {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.alert-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.alert-title strong {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 4px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.alert-sender {
+  display: block;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.alert-body {
+  padding: 24px;
+}
+
+.alert-description {
+  font-size: 15px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.9);
+  margin-bottom: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-line;
+}
+
+.alert-description::-webkit-scrollbar {
+  width: 6px;
+}
+
+.alert-description::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.alert-description::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.alert-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.alert-time {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.meta-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.meta-value {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+}
+
+.alert-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0 24px 24px;
+}
+
+.alert-tag {
+  background: rgba(99, 102, 241, 0.2);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.3s;
+}
+
+.alert-tag:hover {
+  background: rgba(99, 102, 241, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Alert Severity Colors */
+.alert-extreme .alert-header {
+  background: linear-gradient(135deg, #7c2d12, #dc2626) !important;
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.5);
+}
+
+.alert-severe .alert-header {
+  background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+  box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
+}
+
+.alert-moderate .alert-header {
+  background: linear-gradient(135deg, #f59e0b, #f97316) !important;
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.4);
+}
+
+.alert-minor .alert-header {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa) !important;
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* Alert Badge in Header */
+.alert-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 700;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width: 767px) {
+  .weather-alerts {
+    padding: 20px !important;
+  }
+  
+  .alert-header {
+    padding: 16px !important;
+  }
+  
+  .alert-icon {
+    font-size: 32px !important;
+  }
+  
+  .alert-title strong {
+    font-size: 16px !important;
+  }
+  
+  .alert-body {
+    padding: 20px !important;
+  }
+  
+  .alert-description {
+    font-size: 14px !important;
+    max-height: 150px !important;
+  }
+  
+  .alert-meta {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+  
+  .alert-tags {
+    padding: 0 20px 20px !important;
+  }
+}
+
+/* Alert Notification Banner */
+.alert-notification-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  color: white;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  box-shadow: 0 10px 40px rgba(220, 38, 38, 0.4);
+  z-index: 10000;
+  animation: slideDownAlert 0.5s ease-out;
+}
+
+@keyframes slideDownAlert {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.alert-notification-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.alert-notification-icon {
+  font-size: 28px;
+  animation: bounce-alert 1s ease-in-out infinite;
+}
+
+.alert-notification-text {
+  flex: 1;
+}
+
+.alert-notification-title {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+.alert-notification-message {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.alert-notification-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.alert-notification-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}

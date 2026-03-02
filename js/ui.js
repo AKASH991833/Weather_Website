@@ -1,10 +1,15 @@
 /**
  * WeatherNow - UI Module
- * All Features: Theme, AQI, Graph, Locations
+ * 
+ * Handles all UI updates, rendering, and user interactions.
+ * Features: Theme toggling, weather display, forecasts, graphs, and loading states.
  */
+
+import { COUNTRY_NAMES, COUNTRY_FLAGS } from './config.js';
 
 const elements = {};
 let tempChart = null;
+let focusedResultIndex = -1;
 
 export function initElements() {
   elements.loading = document.getElementById('loading');
@@ -20,6 +25,17 @@ export function initElements() {
   elements.locationsDropdown = document.getElementById('locations-dropdown');
   elements.savedLocationsList = document.getElementById('saved-locations-list');
   elements.savedCount = document.getElementById('saved-count');
+  
+  // Location Info Card elements
+  elements.locationInfoCard = document.getElementById('location-info-card');
+  elements.locationCity = document.getElementById('location-city');
+  elements.locationState = document.getElementById('location-state');
+  elements.locationCountry = document.getElementById('location-country');
+  elements.locationPincode = document.getElementById('location-pincode');
+  elements.locationCoords = document.getElementById('location-coords');
+  elements.locationTimezone = document.getElementById('location-timezone');
+  elements.closeLocationCard = document.getElementById('close-location-card');
+  
   elements.cityName = document.getElementById('city-name');
   elements.currentDate = document.getElementById('current-date');
   elements.currentTemp = document.getElementById('current-temp');
@@ -286,6 +302,12 @@ export function renderTemperatureGraph(hourly) {
   const ctx = document.getElementById('temp-graph');
   if (!ctx) return;
 
+  if (typeof Chart === 'undefined') {
+    console.warn('Chart.js not loaded. Temperature graph will be skipped.');
+    ctx.parentElement.innerHTML = '<p class="chart-error">Temperature trend visualization is unavailable offline.</p>';
+    return;
+  }
+
   if (tempChart) {
     tempChart.destroy();
   }
@@ -359,38 +381,52 @@ export function showSearchResults(results, query) {
   focusedResultIndex = -1; // Reset focus
 
   if (!results || results.length === 0) {
-    // Show "no results" message instead of hiding
+    // Show "no results" message
     const li = document.createElement('li');
     li.className = 'no-results';
-    li.innerHTML = `🔍 No locations found for "<strong>${escapeHtml(query)}</strong>"`;
+    li.innerHTML = `🔍 No locations found for "<strong>${escapeHtml(query)}</strong>"<br><small>Try checking spelling or search with coordinates</small>`;
     elements.searchResults.appendChild(li);
     elements.searchResults.classList.add('active');
     return;
   }
 
+  // Show results in dropdown
   results.forEach(result => {
     const li = document.createElement('li');
-    const displayName = formatLocationName(result);
+    const displayName = getDisplayNameForResult(result);
 
     li.setAttribute('role', 'option');
     li.setAttribute('data-lat', result.lat);
     li.setAttribute('data-lon', result.lon);
-    li.setAttribute('data-name', displayName);
+    li.setAttribute('data-name', result.name);
+    li.setAttribute('data-state', result.state || '');
+    li.setAttribute('data-country', result.country || '');
+    li.setAttribute('data-zip', result.zip || '');
     li.className = 'search-result-item';
 
-    li.innerHTML = highlightMatch(displayName, query);
+    // Create rich result display
+    li.innerHTML = createSearchResultHTML(result, query);
 
     li.addEventListener('click', () => {
-      // Use the clicked item's data, not closure variable
       const clickedName = li.getAttribute('data-name');
+      const clickedState = li.getAttribute('data-state');
+      const clickedCountry = li.getAttribute('data-country');
       const clickedLat = parseFloat(li.getAttribute('data-lat'));
       const clickedLon = parseFloat(li.getAttribute('data-lon'));
-      
-      elements.searchInput.value = clickedName;
+      const clickedZip = li.getAttribute('data-zip');
+
+      elements.searchInput.value = getDisplayNameForResult(result);
       hideSearchResults();
-      
+
       const event = new CustomEvent('locationSelected', {
-        detail: { lat: clickedLat, lon: clickedLon, name: clickedName }
+        detail: { 
+          lat: clickedLat, 
+          lon: clickedLon, 
+          name: clickedName,
+          state: clickedState,
+          country: clickedCountry,
+          zip: clickedZip
+        }
       });
       document.dispatchEvent(event);
     });
@@ -399,6 +435,75 @@ export function showSearchResults(results, query) {
   });
 
   elements.searchResults.classList.add('active');
+}
+
+/**
+ * Get display name for search result
+ */
+function getDisplayNameForResult(result) {
+  const parts = [result.name];
+  
+  if (result.state && result.state.toLowerCase() !== result.name.toLowerCase()) {
+    parts.push(result.state);
+  }
+  
+  if (result.country) {
+    parts.push(result.country);
+  }
+  
+  return parts.join(', ');
+}
+
+/**
+ * Create rich HTML for search result
+ */
+function createSearchResultHTML(result, query) {
+  const flag = result.countryFlag || COUNTRY_FLAGS[result.country] || '';
+  const countryName = result.countryName || COUNTRY_NAMES[result.country] || result.country || '';
+
+  let html = `<div class="result-content">`;
+
+  // Flag icon
+  if (flag) {
+    html += `<span class="result-flag">${flag}</span>`;
+  } else {
+    html += `<span class="result-flag">📍</span>`;
+  }
+
+  // Main info
+  html += `<div class="result-info">`;
+  html += `<div class="result-name">${highlightMatch(result.name, query)}</div>`;
+
+  // Secondary info (state, country)
+  const secondaryParts = [];
+  if (result.state && result.state.toLowerCase() !== result.name.toLowerCase()) {
+    secondaryParts.push(result.state);
+  }
+  if (countryName) {
+    secondaryParts.push(countryName);
+  }
+
+  if (secondaryParts.length > 0) {
+    html += `<div class="result-secondary">${secondaryParts.join(', ')}</div>`;
+  }
+
+  // Coordinates with correct direction indicators
+  if (typeof result.lat === 'number' && typeof result.lon === 'number') {
+    const latDir = result.lat >= 0 ? 'N' : 'S';
+    const lonDir = result.lon >= 0 ? 'E' : 'W';
+    html += `<div class="result-coords">${Math.abs(result.lat).toFixed(2)}°${latDir}, ${Math.abs(result.lon).toFixed(2)}°${lonDir}</div>`;
+  }
+
+  html += `</div>`; // Close result-info
+
+  // ZIP code if available
+  if (result.zip) {
+    html += `<span class="result-zip">📮 ${result.zip}</span>`;
+  }
+
+  html += `</div>`; // Close result-content
+
+  return html;
 }
 
 function escapeHtml(text) {
@@ -503,30 +608,26 @@ export function formatHour(timestamp) {
 }
 
 export function formatLocationName(result) {
+  // Format location name for display with country flag
+  if (!result || !result.name) return '';
+  
   const parts = [result.name];
-
-  // Add state if available AND different from city name
-  if (result.state && typeof result.state === 'string') {
-    const stateName = result.state.trim();
-    const cityName = result.name.trim();
-
-    // Don't add state if it's same as city name (e.g., "New York, New York")
-    if (stateName.toLowerCase() !== cityName.toLowerCase() && stateName.length > 0) {
-      parts.push(stateName);
+  
+  if (result.state && result.state.toLowerCase() !== result.name.toLowerCase()) {
+    parts.push(result.state);
+  }
+  
+  if (result.country) {
+    const flag = COUNTRY_FLAGS[result.country] || '';
+    const countryName = COUNTRY_NAMES[result.country] || result.country;
+    if (flag) {
+      parts.push(`${flag} ${countryName}`);
+    } else {
+      parts.push(countryName);
     }
   }
-
-  // Add country code if available
-  if (result.country) {
-    parts.push(result.country);
-  }
-
-  // Add PIN code/ZIP if available
-  if (result.zip) {
-    parts.push(`PIN: ${result.zip}`);
-  }
-
-  return parts.filter(Boolean).join(', ');
+  
+  return parts.join(', ');
 }
 
 function highlightMatch(text, query) {
@@ -593,7 +694,7 @@ export function setupEventListeners(callbacks) {
 }
 
 // Track currently focused search result
-let focusedResultIndex = -1;
+// focusedResultIndex is already declared at the top of the module
 
 function handleSearchResultNavigation(direction) {
   if (!elements.searchResults) return;
@@ -640,6 +741,88 @@ export function getSearchValue() {
   return elements.searchInput?.value || '';
 }
 
+/**
+ * Show Location Info Card with detailed information
+ */
+export function showLocationInfoCard(location) {
+  if (!elements.locationInfoCard) return;
+
+  // Update location details
+  if (elements.locationCity) {
+    elements.locationCity.textContent = location.name || '--';
+  }
+  if (elements.locationState) {
+    elements.locationState.textContent = location.state || 'Not available';
+  }
+  if (elements.locationCountry) {
+    const flag = COUNTRY_FLAGS[location.country] || '';
+    const name = COUNTRY_NAMES[location.country] || location.country || '';
+    if (flag && name) {
+      elements.locationCountry.textContent = `${flag} ${name}`;
+    } else if (name) {
+      elements.locationCountry.textContent = name;
+    } else {
+      elements.locationCountry.textContent = '--';
+    }
+  }
+  if (elements.locationPincode) {
+    if (location.zip) {
+      elements.locationPincode.textContent = location.zip;
+      elements.locationPincode.style.fontStyle = 'normal';
+      elements.locationPincode.style.fontSize = '14px';
+    } else {
+      elements.locationPincode.textContent = 'Search by PIN code for exact value';
+      elements.locationPincode.style.fontStyle = 'italic';
+      elements.locationPincode.style.fontSize = '12px';
+    }
+  }
+  if (elements.locationCoords) {
+    if (typeof location.lat === 'number' && typeof location.lon === 'number') {
+      const latDir = location.lat >= 0 ? 'N' : 'S';
+      const lonDir = location.lon >= 0 ? 'E' : 'W';
+      elements.locationCoords.textContent = `${Math.abs(location.lat).toFixed(4)}°${latDir}, ${Math.abs(location.lon).toFixed(4)}°${lonDir}`;
+    } else {
+      elements.locationCoords.textContent = 'Not available';
+    }
+  }
+  if (elements.locationTimezone) {
+    if (typeof location.lat === 'number' && typeof location.lon === 'number') {
+      const offset = location.lon / 15;
+      const hours = Math.floor(Math.abs(offset));
+      const minutes = Math.round((Math.abs(offset) - hours) * 60);
+      const sign = offset >= 0 ? '+' : '-';
+      const minutesStr = minutes > 0 ? `:${minutes.toString().padStart(2, '0')}` : '';
+      elements.locationTimezone.textContent = `UTC${sign}${hours}${minutesStr}`;
+    } else {
+      elements.locationTimezone.textContent = 'Not available';
+    }
+  }
+
+  // Show card with animation
+  elements.locationInfoCard.style.display = 'block';
+  elements.locationInfoCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/**
+ * Hide Location Info Card
+ */
+export function hideLocationInfoCard() {
+  if (elements.locationInfoCard) {
+    elements.locationInfoCard.style.display = 'none';
+  }
+}
+
+/**
+ * Setup Location Info Card close button
+ */
+export function setupLocationInfoCard() {
+  if (elements.closeLocationCard) {
+    elements.closeLocationCard.addEventListener('click', () => {
+      hideLocationInfoCard();
+    });
+  }
+}
+
 export default {
   initElements,
   hideLoading,
@@ -668,5 +851,8 @@ export default {
   formatLocationName,
   setupEventListeners,
   setSearchValue,
-  getSearchValue
+  getSearchValue,
+  showLocationInfoCard,
+  hideLocationInfoCard,
+  setupLocationInfoCard
 };

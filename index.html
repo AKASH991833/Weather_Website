@@ -3,8 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WeatherNow - Ultimate Weather Experience</title>
   
+  <!-- Primary Meta Tags -->
+  <title>WeatherNow - Live Weather Forecast, Air Quality & 7-Day Forecast</title>
+  <meta name="title" content="WeatherNow - Live Weather Forecast, Air Quality & 7-Day Forecast">
+  <meta name="description" content="Get real-time weather updates, air quality index, 7-day forecast, and hourly predictions. Search any city worldwide for accurate weather information.">
+  <meta name="keywords" content="weather, forecast, air quality, temperature, humidity, wind speed, weather app, live weather, 7 day forecast, hourly weather">
+  <meta name="author" content="AKASH">
+  <meta name="robots" content="index, follow">
+  <meta name="language" content="English">
+  <meta name="theme-color" content="#6366f1">
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://yourwebsite.com/">
+  <meta property="og:title" content="WeatherNow - Live Weather Forecast">
+  <meta property="og:description" content="Get real-time weather updates, air quality index, 7-day forecast, and hourly predictions.">
+  <meta property="og:image" content="https://yourwebsite.com/og-image.jpg">
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:url" content="https://yourwebsite.com/">
+  <meta property="twitter:title" content="WeatherNow - Live Weather Forecast">
+  <meta property="twitter:description" content="Get real-time weather updates, air quality index, 7-day forecast, and hourly predictions.">
+  <meta property="twitter:image" content="https://yourwebsite.com/og-image.jpg">
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://yourwebsite.com/">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+
+  <!-- Preconnect to APIs -->
+  <link rel="preconnect" href="https://api.openweathermap.org">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,18 +44,50 @@
   <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+  <!-- html2canvas for export -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
   <!-- Stylesheets -->
-  <link rel="stylesheet" href="css/styles.css">
-  <link rel="stylesheet" href="css/components.css">
-  <link rel="stylesheet" href="css/responsive.css">
-  <link rel="stylesheet" href="css/animations.css">
+  <link rel="stylesheet" href="css/styles.css?v=10">
+  <link rel="stylesheet" href="css/components.css?v=5">
+  <link rel="stylesheet" href="css/responsive.css?v=5">
+  <link rel="stylesheet" href="css/animations.css?v=5">
+  <link rel="stylesheet" href="css/ui-enhanced.css?v=1">
+  <link rel="stylesheet" href="css/animations-enhanced.css?v=1">
+  <link rel="stylesheet" href="css/responsive-enhanced.css?v=1">
+  <link rel="stylesheet" href="css/alerts.css?v=1">
+  <link rel="stylesheet" href="css/accessibility.css?v=1">
 
   <!-- PWA Manifest -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#6366f1">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="WeatherNow">
+  
+  <!-- Structured Data (Schema.org) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "WeatherNow",
+    "description": "Real-time weather forecasting application with air quality index, 7-day forecast, and hourly predictions",
+    "url": "https://yourwebsite.com/",
+    "applicationCategory": "WeatherApplication",
+    "operatingSystem": "All",
+    "browserRequirements": "Requires JavaScript",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": "Real-time weather, Air quality index, 7-day forecast, Hourly forecast, Weather alerts, PWA support",
+    "author": {
+      "@type": "Person",
+      "name": "AKASH"
+    }
+  }
+  </script>
 </head>
 <body class="theme-light">
   <!-- Dynamic Weather Background -->
@@ -90,11 +154,44 @@
           </div>
         </div>
 
-        <!-- Theme Toggle -->
-        <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
-          <span class="theme-icon-light">🌙</span>
-          <span class="theme-icon-dark">☀️</span>
-        </button>
+        <!-- Theme Toggle with Dropdown -->
+        <div class="theme-switcher-wrapper">
+          <button id="theme-toggle" class="icon-btn" title="Toggle Theme">
+            <span class="theme-icon-light">🌙</span>
+            <span class="theme-icon-dark">☀️</span>
+          </button>
+          <div id="theme-dropdown" class="dropdown theme-dropdown">
+            <div class="dropdown-header">
+              <span>🎨 Select Theme</span>
+            </div>
+            <div class="theme-options">
+              <button class="theme-option" data-theme="light" title="Light Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #667eea, #764ba2);"></span>
+                <span>Light</span>
+              </button>
+              <button class="theme-option" data-theme="dark" title="Dark Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #0f172a, #1e1b4b);"></span>
+                <span>Dark</span>
+              </button>
+              <button class="theme-option" data-theme="sunset" title="Sunset Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></span>
+                <span>Sunset</span>
+              </button>
+              <button class="theme-option" data-theme="ocean" title="Ocean Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #667eea, #0ea5e9);"></span>
+                <span>Ocean</span>
+              </button>
+              <button class="theme-option" data-theme="forest" title="Forest Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #11998e, #38ef7d);"></span>
+                <span>Forest</span>
+              </button>
+              <button class="theme-option" data-theme="midnight" title="Midnight Theme">
+                <span class="theme-preview" style="background: linear-gradient(135deg, #232526, #414345);"></span>
+                <span>Midnight</span>
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- Unit Toggle -->
         <button id="unit-toggle" class="unit-toggle">
@@ -105,17 +202,108 @@
     </header>
 
     <!-- Search Bar -->
-    <div class="search-section">
+    <div class="search-section" role="search" aria-label="City and location search">
       <div class="search-container">
         <div class="search-box">
-          <span class="search-icon">🔍</span>
-          <input type="text" id="search-input" placeholder="Search city, PIN code, coordinates, or country..." autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" role="combobox" aria-expanded="false" aria-controls="search-results">
-          <button id="location-btn" title="Use my location">📍</button>
-          <div id="search-loading" class="search-loading" style="display: none;">⏳</div>
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Search city, coordinates (lat,lon), or postal code..."
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+            role="combobox"
+            aria-expanded="false"
+            aria-controls="search-results"
+            aria-label="Search for a city or location"
+            aria-autocomplete="list"
+          >
+          <button id="location-btn" title="Use my location" aria-label="Get current location">📍</button>
+          <div id="search-loading" class="search-loading" style="display: none;" aria-hidden="true">⏳</div>
         </div>
-        <ul id="search-results" class="search-dropdown" role="listbox"></ul>
+
+        <!-- Popular Searches (SEO + UX) -->
+        <div id="popular-searches" class="popular-searches" style="display: none;">
+          <p class="popular-label">🔥 Popular Cities Worldwide:</p>
+          <div class="popular-cities">
+            <button class="popular-city" data-city="Mumbai">Mumbai</button>
+            <button class="popular-city" data-city="Delhi">Delhi</button>
+            <button class="popular-city" data-city="Bangalore">Bangalore</button>
+            <button class="popular-city" data-city="Chennai">Chennai</button>
+            <button class="popular-city" data-city="Kolkata">Kolkata</button>
+            <button class="popular-city" data-city="Hyderabad">Hyderabad</button>
+            <button class="popular-city" data-city="Pune">Pune</button>
+            <button class="popular-city" data-city="Ahmedabad">Ahmedabad</button>
+            <button class="popular-city" data-city="New York">New York</button>
+            <button class="popular-city" data-city="London">London</button>
+            <button class="popular-city" data-city="Tokyo">Tokyo</button>
+            <button class="popular-city" data-city="Paris">Paris</button>
+            <button class="popular-city" data-city="Dubai">Dubai</button>
+            <button class="popular-city" data-city="Singapore">Singapore</button>
+            <button class="popular-city" data-city="Sydney">Sydney</button>
+            <button class="popular-city" data-city="Toronto">Toronto</button>
+          </div>
+        </div>
+
+        <ul id="search-results" class="search-dropdown" role="listbox" aria-label="Search results"></ul>
       </div>
-      <p class="search-hint">💡 Tip: Search by city name, PIN code (400001), coordinates (19.07, 72.87), or country (IN, US, UK)...</p>
+      <p class="search-hint">💡 Tip: Just type a city name - we'll find it automatically! Or use 📍 for current location.</p>
+    </div>
+
+    <!-- Location Info Card (Shows after search) -->
+    <div id="location-info-card" class="location-info-card" style="display: none;">
+      <div class="location-card-header">
+        <h3 id="location-card-title" class="location-card-title">📍 Location Details</h3>
+        <button id="close-location-card" class="close-location-card" aria-label="Close location details">×</button>
+      </div>
+      <div class="location-card-content">
+        <div class="location-info-grid">
+          <div class="location-info-item">
+            <span class="location-info-icon">🏙️</span>
+            <div class="location-info-details">
+              <span class="location-info-label">City/Village</span>
+              <span id="location-city" class="location-info-value">--</span>
+            </div>
+          </div>
+          <div class="location-info-item">
+            <span class="location-info-icon">🗺️</span>
+            <div class="location-info-details">
+              <span class="location-info-label">State/Province</span>
+              <span id="location-state" class="location-info-value">--</span>
+            </div>
+          </div>
+          <div class="location-info-item">
+            <span class="location-info-icon">🌍</span>
+            <div class="location-info-details">
+              <span class="location-info-label">Country</span>
+              <span id="location-country" class="location-info-value">--</span>
+            </div>
+          </div>
+          <div class="location-info-item">
+            <span class="location-info-icon">📮</span>
+            <div class="location-info-details">
+              <span class="location-info-label">PIN Code / ZIP</span>
+              <span id="location-pincode" class="location-info-value">--</span>
+            </div>
+          </div>
+          <div class="location-info-item">
+            <span class="location-info-icon">🌐</span>
+            <div class="location-info-details">
+              <span class="location-info-label">Coordinates</span>
+              <span id="location-coords" class="location-info-value">--</span>
+            </div>
+          </div>
+          <div class="location-info-item">
+            <span class="location-info-icon">🕐</span>
+            <div class="location-info-details">
+              <span class="location-info-label">Timezone</span>
+              <span id="location-timezone" class="location-info-value">--</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Main Weather Display -->
@@ -257,6 +445,21 @@
       <h2 class="section-title">📈 Temperature Trend</h2>
       <div class="graph-container">
         <canvas id="temp-graph"></canvas>
+      </div>
+    </section>
+
+    <!-- Weather Map -->
+    <section class="map-section">
+      <h2 class="section-title">🗺️ Weather Map</h2>
+      <div class="map-container">
+        <iframe 
+          id="weather-map"
+          class="weather-map-iframe"
+          src="https://embed.windy.com/embed2.html?lat=20.5937&lon=78.9629&detailLat=20.5937&detailLon=78.9629&width=650&height=450&zoom=5&level=surface&overlay=rain&product=ecmwf&menu=&message=&marker=&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=default&metricTemp=default&radarRange=-1"
+          frameborder="0"
+          allowfullscreen
+          allow="geolocation"
+        ></iframe>
       </div>
     </section>
 
@@ -409,6 +612,10 @@
     </footer>
   </div>
 
-  <script type="module" src="js/main.js"></script>
+  <script type="module">
+    // Import main application module
+    import './js/main.js?v=20';
+    console.log('✅ WeatherNow application loaded');
+  </script>
 </body>
 </html>

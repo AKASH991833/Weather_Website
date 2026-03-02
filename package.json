@@ -1,0 +1,32 @@
+{
+  "name": "weathernow-backend",
+  "version": "1.0.0",
+  "description": "WeatherNow - Secure Backend Proxy Server",
+  "main": "server/proxy-server.js",
+  "scripts": {
+    "start": "node server/proxy-server.js",
+    "dev": "nodemon server/proxy-server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "weather",
+    "api",
+    "proxy",
+    "backend"
+  ],
+  "author": "AKASH",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "node-cache": "^5.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+}

@@ -4,6 +4,7 @@
  */
 
 import CONFIG from './config.js';
+import PIN_DB from './india-pincode-db.js';
 
 // In-memory cache for weather data
 const weatherCache = new Map();
@@ -16,6 +17,8 @@ const THEME_KEY = 'weathernow:theme';
 /**
  * Search for locations by query
  * Enhanced with support for: cities, countries, states, postal codes, coordinates
+ * Returns MULTIPLE matches for user to choose (prevents premature selection)
+ * Uses direct OpenWeatherMap API with API key
  */
 export async function searchLocations(query) {
   if (!query || query.trim().length < 2) {
@@ -25,14 +28,13 @@ export async function searchLocations(query) {
   const trimmedQuery = query.trim();
 
   try {
-    let url;
     let results = [];
-    
+
     // Check if query is coordinates (lat,lon)
     const coordMatch = trimmedQuery.match(/^(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)$/);
     if (coordMatch) {
       // Reverse geocoding - get location from coordinates
-      url = `${CONFIG.GEOCODING_URL}/reverse?lat=${coordMatch[1]}&lon=${coordMatch[2]}&limit=${CONFIG.MAX_SEARCH_RESULTS}&appid=${CONFIG.API_KEY}`;
+      const url = `${CONFIG.GEOCODING_URL}/reverse?lat=${coordMatch[1]}&lon=${coordMatch[2]}&limit=1&appid=${CONFIG.API_KEY}`;
       const response = await fetch(url);
       if (response.ok) {
         results = await response.json();
@@ -45,32 +47,30 @@ export async function searchLocations(query) {
     }
     // Check if query is country code (2 letters)
     else if (/^[A-Z]{2}$/i.test(trimmedQuery) && trimmedQuery.length === 2) {
-      // Search by country code - get capital cities
-      url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(trimmedQuery)}&limit=10&appid=${CONFIG.API_KEY}`;
+      // Search by country code - get multiple cities
+      const url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(trimmedQuery)}&limit=10&appid=${CONFIG.API_KEY}`;
       const response = await fetch(url);
       if (response.ok) {
         results = await response.json();
       }
     }
-    // Regular city/state/country search
+    // Regular city/state/country search - return MULTIPLE results
     else {
-      // Search with more results to allow client-side filtering
-      url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(trimmedQuery)}&limit=10&appid=${CONFIG.API_KEY}`;
+      // Use OpenWeatherMap geocoding API with limit=10 for better selection
+      const url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(trimmedQuery)}&limit=10&appid=${CONFIG.API_KEY}`;
       const response = await fetch(url);
       if (response.ok) {
         results = await response.json();
       }
     }
-    
+
     // Handle empty results
     if (!results || results.length === 0) {
       return [];
     }
 
-    // Filter and rank results
-    const filteredResults = rankAndFilterResults(results, trimmedQuery);
-    
-    return filteredResults.map(location => ({
+    // Return all results (up to 5) for user to choose
+    return results.slice(0, 5).map(location => ({
       name: location.name,
       lat: location.lat,
       lon: location.lon,
@@ -86,6 +86,7 @@ export async function searchLocations(query) {
 /**
  * Search by postal code with multiple country support
  * Enhanced with comprehensive Indian PIN code coverage
+ * Uses LOCAL SERVER for secure API key management
  */
 async function searchByPostalCode(postalCode) {
   const allResults = [];
@@ -116,39 +117,20 @@ async function searchByPostalCode(postalCode) {
   // Try searching in multiple countries (skip IN as we already handled it)
   for (const country of commonCountries) {
     try {
-      const url = `${CONFIG.GEOCODING_URL}/zip?zip=${postalCode},${country.code}&appid=${CONFIG.API_KEY}`;
+      // Use local server API instead of direct OpenWeather call
+      const url = `${CONFIG.API_BASE_URL}/search?q=${encodeURIComponent(postalCode)}`;
       const response = await fetch(url);
       
       if (response.ok) {
         const data = await response.json();
-        if (data && data.name && data.name !== 'India') {  // Skip generic "India" results
-          allResults.push({
-            name: data.name,
-            lat: data.lat,
-            lon: data.lon,
-            country: country.code,
-            state: data.state || ''
-          });
+        if (data && data.length > 0) {
+          allResults.push(...data);
         }
       }
     } catch (err) {
       // Continue to next country if this one fails
       continue;
     }
-  }
-  
-  // Also try without country code (API might find it)
-  try {
-    const url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(postalCode)}&limit=5&appid=${CONFIG.API_KEY}`;
-    const response = await fetch(url);
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.length > 0) {
-        allResults.push(...data);
-      }
-    }
-  } catch (err) {
-    // Ignore errors from fallback search
   }
   
   // Remove duplicates and return
@@ -164,110 +146,112 @@ async function searchByPostalCode(postalCode) {
 }
 
 /**
- * Search Indian PIN codes using multiple strategies
+ * Search Indian PIN codes using local database first, then fallback to APIs
+ * Uses LOCAL SERVER for secure API key management
  */
 async function searchIndianPinCode(pinCode) {
   const results = [];
   
-  // Strategy 1: Try ZIP API
   try {
-    const url = `${CONFIG.GEOCODING_URL}/zip?zip=${pinCode},IN&appid=${CONFIG.API_KEY}`;
-    const response = await fetch(url);
+    // Step 1: Get EXACT coordinates from local server
+    const zipUrl = `${CONFIG.API_BASE_URL}/search?q=${encodeURIComponent(pinCode)}`;
+    const zipResponse = await fetch(zipUrl);
     
-    if (response.ok) {
-      const data = await response.json();
-      if (data && data.name && data.name !== 'India') {
+    if (zipResponse.ok) {
+      const zipData = await zipResponse.json();
+      
+      if (zipData && zipData.length > 0) {
+        const data = zipData[0];
+        
+        // Step 2: Cross-reference with our local database to get a better area name
+        const localInfo = PIN_DB.searchByPIN(pinCode);
+        let displayName = data.name;
+        let displayState = data.state || getIndianStateFromPin(pinCode);
+        
+        // If local database has a more specific name
+        if (localInfo && localInfo.length > 0 && (displayName.toLowerCase() === 'india' || !displayName)) {
+          displayName = localInfo[0].name;
+          displayState = localInfo[0].state;
+        }
+        
         results.push({
-          name: data.name,
+          name: displayName,
           lat: data.lat,
           lon: data.lon,
           country: 'IN',
-          state: data.state || getIndianStateFromPin(pinCode)
+          state: displayState
         });
+        
+        return results;
       }
     }
   } catch (err) {
-    // Continue to next strategy
+    console.warn('Server API failed, trying fallback...');
   }
   
-  // Strategy 2: Try direct search with PIN code
-  if (results.length === 0) {
-    try {
-      const url = `${CONFIG.GEOCODING_URL}/direct?q=${pinCode}%20India&limit=5&appid=${CONFIG.API_KEY}`;
-      const response = await fetch(url);
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data && data.length > 0) {
-          // Filter for Indian results only
-          const indianResults = data.filter(loc => loc.country === 'IN');
-          results.push(...indianResults.map(loc => ({
-            name: loc.name,
-            lat: loc.lat,
-            lon: loc.lon,
-            country: 'IN',
-            state: loc.state || getIndianStateFromPin(pinCode)
-          })));
-        }
-      }
-    } catch (err) {
-      // Continue
-    }
-  }
-  
-  // Strategy 3: Use PIN code to state mapping for major cities
-  if (results.length === 0) {
-    const state = getIndianStateFromPin(pinCode);
-    if (state) {
-      // Search for major cities in that state
-      const majorCities = getMajorCitiesForState(state);
-      for (const city of majorCities) {
-        try {
-          const url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(city)},${state},IN&limit=1&appid=${CONFIG.API_KEY}`;
-          const response = await fetch(url);
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data && data.length > 0) {
-              results.push({
-                name: data[0].name,
-                lat: data[0].lat,
-                lon: data[0].lon,
-                country: 'IN',
-                state: state
-              });
-              break; // Found one result, that's enough
-            }
-          }
-        } catch (err) {
-          continue;
-        }
-      }
-    }
-  }
-  
-  return results;
+  // Fallback to Local Database only
+  const localOnly = PIN_DB.searchByPIN(pinCode);
+  return localOnly.map(loc => ({
+    name: loc.name,
+    lat: loc.lat,
+    lon: loc.lon,
+    country: 'IN',
+    state: loc.state
+  }));
 }
 
 /**
- * Get Indian state from PIN code (first digit indicates region)
+ * Get Indian state from PIN code (using first two digits for better accuracy)
  */
 function getIndianStateFromPin(pinCode) {
+  const prefix = pinCode.substring(0, 2);
   const firstDigit = pinCode.charAt(0);
   
-  const stateMap = {
-    '1': 'Delhi, Haryana, Punjab, Himachal Pradesh, Jammu & Kashmir, Ladakh',
-    '2': 'Uttar Pradesh, Uttarakhand',
-    '3': 'Rajasthan, Gujarat, Dadra & Nagar Haveli, Daman & Diu',
-    '4': 'Maharashtra, Goa, Andhra Pradesh (parts)',
-    '5': 'Andhra Pradesh, Telangana, Karnataka (parts)',
-    '6': 'Tamil Nadu, Kerala, Lakshadweep, Puducherry',
-    '7': 'West Bengal, Odisha, Sikkim, Assam, Arunachal Pradesh, Nagaland, Manipur, Mizoram, Tripura, Meghalaya',
-    '8': 'Bihar, Jharkhand',
-    '9': 'Army Post (APO), Field Post (FPO)'
+  // More precise mapping using first 2 digits
+  const stateMap2 = {
+    '11': 'Delhi',
+    '12': 'Haryana', '13': 'Haryana',
+    '14': 'Punjab', '15': 'Punjab',
+    '16': 'Chandigarh',
+    '17': 'Himachal Pradesh',
+    '18': 'Jammu & Kashmir', '19': 'Jammu & Kashmir',
+    '20': 'Uttar Pradesh', '21': 'Uttar Pradesh', '22': 'Uttar Pradesh', '23': 'Uttar Pradesh', 
+    '24': 'Uttar Pradesh', '25': 'Uttar Pradesh', '26': 'Uttar Pradesh', '27': 'Uttar Pradesh', '28': 'Uttar Pradesh',
+    '29': 'Uttarakhand',
+    '30': 'Rajasthan', '31': 'Rajasthan', '32': 'Rajasthan', '33': 'Rajasthan', '34': 'Rajasthan',
+    '36': 'Gujarat', '37': 'Gujarat', '38': 'Gujarat', '39': 'Gujarat',
+    '40': 'Maharashtra', '41': 'Maharashtra', '42': 'Maharashtra', '43': 'Maharashtra', '44': 'Maharashtra',
+    '45': 'Madhya Pradesh', '46': 'Madhya Pradesh', '47': 'Madhya Pradesh', '48': 'Madhya Pradesh',
+    '49': 'Chhattisgarh',
+    '50': 'Telangana', '51': 'Andhra Pradesh', '52': 'Andhra Pradesh', '53': 'Andhra Pradesh',
+    '56': 'Karnataka', '57': 'Karnataka', '58': 'Karnataka', '59': 'Karnataka',
+    '60': 'Tamil Nadu', '61': 'Tamil Nadu', '62': 'Tamil Nadu', '63': 'Tamil Nadu', '64': 'Tamil Nadu',
+    '67': 'Kerala', '68': 'Kerala', '69': 'Kerala',
+    '70': 'West Bengal', '71': 'West Bengal', '72': 'West Bengal', '73': 'West Bengal', '74': 'West Bengal',
+    '75': 'Odisha', '76': 'Odisha', '77': 'Odisha',
+    '78': 'Assam',
+    '79': 'NE States',
+    '80': 'Bihar', '81': 'Bihar', '82': 'Bihar', '83': 'Jharkhand', '84': 'Bihar', '85': 'Bihar'
+  };
+
+  if (stateMap2[prefix]) {
+    return stateMap2[prefix];
+  }
+  
+  // Fallback to first digit if 2-digit match not found
+  const stateMap1 = {
+    '1': 'North India',
+    '2': 'Uttar Pradesh/Uttarakhand',
+    '3': 'Rajasthan/Gujarat',
+    '4': 'Maharashtra/MP/Chhattisgarh',
+    '5': 'South India (KA/AP/TS)',
+    '6': 'South India (TN/KL)',
+    '7': 'East/North East India',
+    '8': 'Bihar/Jharkhand',
+    '9': 'Army Post (APO)'
   };
   
-  return stateMap[firstDigit] || '';
+  return stateMap1[firstDigit] || '';
 }
 
 /**
@@ -363,6 +347,7 @@ function rankAndFilterResults(results, query) {
 
 /**
  * Get current weather for a location
+ * Uses LOCAL SERVER for secure API key management
  */
 export async function getCurrentWeather(lat, lon, units = 'metric') {
   const cacheKey = `current:${lat}:${lon}:${units}`;
@@ -373,7 +358,8 @@ export async function getCurrentWeather(lat, lon, units = 'metric') {
   }
 
   try {
-    const url = `${CONFIG.BASE_URL}/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+    // Use local server API
+    const url = `${CONFIG.API_BASE_URL}/weather?lat=${lat}&lon=${lon}&units=${units}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -386,7 +372,7 @@ export async function getCurrentWeather(lat, lon, units = 'metric') {
       }
       throw new Error(`Failed to fetch current weather (${response.status})`);
     }
-    
+
     const data = await response.json();
     setInCache(cacheKey, data);
     return data;
@@ -398,6 +384,7 @@ export async function getCurrentWeather(lat, lon, units = 'metric') {
 
 /**
  * Get weather forecast (5 days / 3 hour)
+ * Uses LOCAL SERVER for secure API key management
  */
 export async function getForecast(lat, lon, units = 'metric') {
   const cacheKey = `forecast:${lat}:${lon}:${units}`;
@@ -408,7 +395,8 @@ export async function getForecast(lat, lon, units = 'metric') {
   }
 
   try {
-    const url = `${CONFIG.BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+    // Use local server API
+    const url = `${CONFIG.API_BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -419,7 +407,7 @@ export async function getForecast(lat, lon, units = 'metric') {
       }
       throw new Error(`Failed to fetch forecast (${response.status})`);
     }
-    
+
     const data = await response.json();
     setInCache(cacheKey, data);
     return data;
@@ -431,6 +419,7 @@ export async function getForecast(lat, lon, units = 'metric') {
 
 /**
  * Get air quality data
+ * Uses LOCAL SERVER for secure API key management
  */
 export async function getAirQuality(lat, lon) {
   const cacheKey = `aqi:${lat}:${lon}`;
@@ -441,7 +430,8 @@ export async function getAirQuality(lat, lon) {
   }
 
   try {
-    const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${CONFIG.API_KEY}`;
+    // Use local server API
+    const url = `${CONFIG.API_BASE_URL}/air-pollution?lat=${lat}&lon=${lon}`;
     const response = await fetch(url);
     
     if (!response.ok) {
@@ -457,7 +447,7 @@ export async function getAirQuality(lat, lon) {
       }
       throw new Error(`Failed to fetch air quality (${response.status})`);
     }
-    
+
     const data = await response.json();
     setInCache(cacheKey, data);
     return data;

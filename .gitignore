@@ -1,12 +1,12 @@
-# Dependencies
+# API Keys & Secrets - NEVER COMMIT THESE!
+js/config.local.js
+.env
+.env.local
+.env.*.local
+
+# Node modules
 node_modules/
-
-# Configuration (contains API keys - NEVER commit)
-js/config.js
-
-# Build outputs
-dist/
-build/
+server/node_modules/
 
 # IDE and editor files
 .vscode/
@@ -14,20 +14,38 @@ build/
 *.swp
 *.swo
 *~
-
-# OS files
 .DS_Store
 Thumbs.db
+
+# Build outputs
+dist/
+build/
 
 # Logs
 *.log
 npm-debug.log*
 
-# Environment files
-.env
-.env.local
-.env.*.local
-
 # Backup files
 *.bak
 *.backup
+
+# Temporary files
+tmp/
+temp/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# PWA Icons (generated)
+icons/*.png
+!icons/.gitkeep
+
+# Cache files
+.cache/
+*.cache
+
+# Local configuration
+config.local.json
+settings.local.json
