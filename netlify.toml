@@ -1,0 +1,33 @@
+# Netlify Configuration
+# This file tells Netlify how to build and deploy your site
+
+[build]
+  # No build step needed - it's pure HTML/CSS/JS
+  publish = "."
+  command = "echo 'No build required - static site'"
+
+[[redirects]]
+  # Redirect all API calls to backend (if using)
+  from = "/api/*"
+  to = "https://api.openweathermap.org/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  # Security headers
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache static assets
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
