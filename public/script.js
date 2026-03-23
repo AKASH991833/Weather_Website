@@ -29,8 +29,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') searchWeather();
   });
   
-  // Load default city
-  fetchWeather('London');
+  console.log('WeatherNow initialized');
+  console.log('API Base URL:', API_BASE_URL);
 });
 
 /**
@@ -77,25 +77,25 @@ function getLocationWeather() {
     showError('Geolocation is not supported by your browser');
     return;
   }
-  
+
   showLoading();
-  
+
   navigator.geolocation.getCurrentPosition(
     async (position) => {
       const { latitude, longitude } = position.coords;
-      
+
       try {
         // First get location name from coordinates
         const locationResponse = await fetch(
           `${API_BASE_URL}/reverse-geo?lat=${latitude}&lon=${longitude}`
         );
-        const locationData = await locationResponse.json();
-        
+        const locationDataArray = await locationResponse.json();
+
         let cityName = 'Current Location';
-        if (locationData && locationData.name) {
-          cityName = locationData.name;
+        if (locationDataArray && Array.isArray(locationDataArray) && locationDataArray.length > 0) {
+          cityName = locationDataArray[0].name || 'Current Location';
         }
-        
+
         // Then get weather data
         await fetchWeatherByCoords(latitude, longitude, cityName);
       } catch (error) {
@@ -113,18 +113,25 @@ function getLocationWeather() {
  */
 async function fetchWeather(city) {
   showLoading();
-  
+
   try {
     // First geocode the city to get coordinates
     const geoResponse = await fetch(`${API_BASE_URL}/geo?q=${encodeURIComponent(city)}`);
     const geoData = await geoResponse.json();
-    
+
     if (!geoData || geoData.length === 0) {
       showError(`City "${city}" not found. Please try another city.`);
       return;
     }
-    
+
     const location = geoData[0];
+    
+    // Validate location data
+    if (!location.lat || !location.lon) {
+      showError('Invalid location data received. Please try another city.');
+      return;
+    }
+    
     await fetchWeatherByCoords(location.lat, location.lon, location.name);
   } catch (error) {
     showError('Failed to fetch weather: ' + error.message);
