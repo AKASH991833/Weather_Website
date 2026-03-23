@@ -130,7 +130,10 @@ export async function getCurrentWeather(lat, lon, units = 'metric') {
   }
 
   const cacheKey = `weather:${lat}:${lon}:${units}`;
-  const url = `${CONFIG.BASE_URL}/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+  // Use backend URL instead of direct API call
+  const backendUrl = `${CONFIG.BACKEND_URL}/weather?lat=${lat}&lon=${lon}&units=${units}`;
+  const directUrl = `${CONFIG.BASE_URL}/weather?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+  const url = CONFIG.BACKEND_URL ? backendUrl : directUrl;
 
   try {
     const data = await fetchWithCache(url, cacheKey);
@@ -150,11 +153,15 @@ export async function getCurrentWeather(lat, lon, units = 'metric') {
  */
 export async function getForecast(lat, lon, units = 'metric') {
   const cacheKey = `forecast:${lat}:${lon}:${units}`;
-  const url = `${CONFIG.BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+  // Use backend URL instead of direct API call
+  const backendUrl = `${CONFIG.BACKEND_URL}/onecall?lat=${lat}&lon=${lon}&units=${units}&exclude=minutely`;
+  const directUrl = `${CONFIG.BASE_URL}/forecast?lat=${lat}&lon=${lon}&units=${units}&appid=${CONFIG.API_KEY}`;
+  const url = CONFIG.BACKEND_URL ? backendUrl : directUrl;
 
   try {
     const data = await fetchWithCache(url, cacheKey);
-    return formatForecastData(data.list, units);
+    // Backend returns OneCall format, convert if needed
+    return formatForecastData(data.list || data.hourly || [], units);
   } catch (error) {
     console.error('Forecast error:', error);
     throw error;
@@ -169,7 +176,10 @@ export async function getForecast(lat, lon, units = 'metric') {
  */
 export async function getAirQuality(lat, lon) {
   const cacheKey = `aqi:${lat}:${lon}`;
-  const url = `${CONFIG.AIR_POLLUTION_URL}?lat=${lat}&lon=${lon}&appid=${CONFIG.API_KEY}`;
+  // Use backend URL instead of direct API call
+  const backendUrl = `${CONFIG.BACKEND_URL}/air-pollution?lat=${lat}&lon=${lon}`;
+  const directUrl = `${CONFIG.AIR_POLLUTION_URL}?lat=${lat}&lon=${lon}&appid=${CONFIG.API_KEY}`;
+  const url = CONFIG.BACKEND_URL ? backendUrl : directUrl;
 
   try {
     const data = await fetchWithCache(url, cacheKey, { ttl: 30 * 60 * 1000 }); // 30 min cache for AQI

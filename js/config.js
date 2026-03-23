@@ -1,19 +1,19 @@
 /**
  * WeatherNow - Configuration File
- * GitHub Pages Compatible - Direct OpenWeather API Calls
+ * Now uses secure Backend Proxy Server
  *
  * SETUP:
- * 1. Get free API key from https://openweathermap.org/api
- * 2. Replace 'YOUR_API_KEY_HERE' with your actual API key
- * 3. Deploy to GitHub Pages
+ * 1. Backend is hosted on Render
+ * 2. All API calls go through the backend (API key is hidden)
+ * 3. Works on GitHub Pages and Mobile App
  */
 
 const CONFIG = {
-  // OpenWeatherMap API Key - REPLACE WITH YOUR KEY
-  // Get free key: https://openweathermap.org/api
-  API_KEY: '82ccd04c1fea51e3ba067b31a39eab69',
+  // ⭐ Backend Proxy Server URL (API key is hidden here)
+  BACKEND_URL: 'https://weather-website-yj9y.onrender.com/api',
 
-  // API Endpoints - Direct OpenWeatherMap API (GitHub Pages compatible)
+  // Fallback direct OpenWeatherMap API (if backend is down)
+  API_KEY: '82ccd04c1fea51e3ba067b31a39eab69',
   BASE_URL: 'https://api.openweathermap.org/data/2.5',
   GEOCODING_URL: 'https://api.openweathermap.org/geo/1.0',
   AIR_POLLUTION_URL: 'https://api.openweathermap.org/data/2.5/air_pollution',

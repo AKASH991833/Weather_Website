@@ -178,7 +178,10 @@ export async function searchLocations(query) {
  * Search by city/state name
  */
 async function searchByCityName(cityName) {
-  const url = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(cityName)}&limit=5&appid=${CONFIG.API_KEY}`;
+  // Use backend URL instead of direct API call
+  const backendUrl = `${CONFIG.BACKEND_URL}/geo?q=${encodeURIComponent(cityName)}&limit=5`;
+  const directUrl = `${CONFIG.GEOCODING_URL}/direct?q=${encodeURIComponent(cityName)}&limit=5&appid=${CONFIG.API_KEY}`;
+  const url = CONFIG.BACKEND_URL ? backendUrl : directUrl;
   return fetchWithCache(url, `search:${cityName.toLowerCase()}`);
 }
 
@@ -186,7 +189,10 @@ async function searchByCityName(cityName) {
  * Reverse geocoding - get location from coordinates
  */
 async function reverseGeocode(lat, lon) {
-  const url = `${CONFIG.GEOCODING_URL}/reverse?lat=${lat}&lon=${lon}&limit=3&appid=${CONFIG.API_KEY}`;
+  // Use backend URL instead of direct API call
+  const backendUrl = `${CONFIG.BACKEND_URL}/reverse-geo?lat=${lat}&lon=${lon}&limit=3`;
+  const directUrl = `${CONFIG.GEOCODING_URL}/reverse?lat=${lat}&lon=${lon}&limit=3&appid=${CONFIG.API_KEY}`;
+  const url = CONFIG.BACKEND_URL ? backendUrl : directUrl;
   return fetchWithCache(url, `reverse:${lat},${lon}`);
 }
 

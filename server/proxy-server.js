@@ -10,11 +10,13 @@
  * 3. node server.js
  */
 
-const express = require('express');
-const cors = require('cors');
-const rateLimit = require('express-rate-limit');
-const NodeCache = require('node-cache');
-require('dotenv').config();
+import express from 'express';
+import cors from 'cors';
+import rateLimit from 'express-rate-limit';
+import NodeCache from 'node-cache';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -31,7 +33,17 @@ if (!API_KEY) {
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://127.0.0.1:3000'],
+  origin: [
+    'http://localhost:3000', 
+    'http://127.0.0.1:3000',
+    'http://localhost:8000',
+    'http://192.168.1.0/24', // Local network
+    /^http:\/\/192\.168\..*/, // Local network IP range
+    'https://weather-website-yj9y.onrender.com',
+    // Add your GitHub Pages URL here when you have it
+    // 'https://yourusername.github.io',
+    // 'https://yourusername.github.io/weather-website'
+  ],
   credentials: true
 }));
 app.use(express.json());
