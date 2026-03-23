@@ -103,7 +103,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Weather endpoint
+// Weather endpoint with comprehensive validation
 app.get('/api/weather', async (req, res) => {
   try {
     const { lat, lon, units = 'metric', lang = 'en' } = req.query;
@@ -111,7 +111,8 @@ app.get('/api/weather', async (req, res) => {
     // Validate parameters
     if (!lat || !lon) {
       return res.status(400).json({
-        error: 'Missing required parameters: lat and lon'
+        error: 'MISSING_PARAMETERS',
+        message: 'Missing required parameters: lat and lon'
       });
     }
 
@@ -120,14 +121,23 @@ app.get('/api/weather', async (req, res) => {
 
     if (isNaN(latNum) || isNaN(lonNum)) {
       return res.status(400).json({
-        error: 'Invalid coordinates. lat and lon must be numbers.'
+        error: 'INVALID_COORDINATES',
+        message: 'Invalid coordinates. lat and lon must be numbers.'
+      });
+    }
+
+    // Validate coordinate ranges
+    if (latNum < -90 || latNum > 90 || lonNum < -180 || lonNum > 180) {
+      return res.status(400).json({
+        error: 'COORDINATES_OUT_OF_RANGE',
+        message: 'Coordinates out of valid range. lat: -90 to 90, lon: -180 to 180'
       });
     }
 
     // Check cache
     const cacheKey = `weather:${lat}:${lon}:${units}`;
     const cached = cache.get(cacheKey);
-    
+
     if (cached) {
       console.log('📦 Cache hit for weather data');
       return res.json(cached);
@@ -135,38 +145,102 @@ app.get('/api/weather', async (req, res) => {
 
     // Fetch from OpenWeatherMap
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latNum}&lon=${lonNum}&appid=${API_KEY}&units=${units}&lang=${lang}`;
-    
+
     console.log('🌐 Fetching weather from API:', url);
-    
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+      let errorMessage = 'Unknown API error';
       
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || `API error: ${response.status}`;
+      } catch (e) {
+        errorMessage = `API error: ${response.status}`;
+      }
+
       if (response.status === 401) {
-        throw new Error('Invalid API key');
+        return res.status(401).json({
+          error: 'INVALID_API_KEY',
+          message: 'Invalid API key configuration'
+        });
       } else if (response.status === 404) {
-        throw new Error('Location not found');
+        return res.status(404).json({
+          error: 'LOCATION_NOT_FOUND',
+          message: 'Location not found for the given coordinates'
+        });
       } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded');
+        return res.status(429).json({
+          error: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many requests. Please wait a moment.'
+        });
       } else {
-        throw new Error(`API error: ${response.status}`);
+        return res.status(response.status).json({
+          error: 'API_ERROR',
+          message: errorMessage
+        });
       }
     }
 
     const data = await response.json();
-    
+
+    // Validate API response structure
+    if (!data || typeof data !== 'object') {
+      return res.status(500).json({
+        error: 'INVALID_RESPONSE',
+        message: 'Received invalid response from weather API'
+      });
+    }
+
+    // Validate required fields
+    const requiredFields = ['coord', 'main', 'weather', 'name'];
+    for (const field of requiredFields) {
+      if (!data[field]) {
+        console.error(`Missing required field in API response: ${field}`);
+        return res.status(500).json({
+          error: 'INCOMPLETE_DATA',
+          message: `Weather data is incomplete. Missing: ${field}`
+        });
+      }
+    }
+
+    // Validate coordinates in response
+    if (typeof data.coord.lat !== 'number' || typeof data.coord.lon !== 'number') {
+      return res.status(500).json({
+        error: 'INVALID_COORDINATES_IN_RESPONSE',
+        message: 'Weather data contains invalid coordinates'
+      });
+    }
+
+    // Validate temperature data
+    if (typeof data.main.temp !== 'number') {
+      return res.status(500).json({
+        error: 'INVALID_TEMPERATURE',
+        message: 'Weather data contains invalid temperature'
+      });
+    }
+
     // Cache the response
     cache.set(cacheKey, data);
-    
-    console.log('✅ Weather data fetched and cached');
-    
+
+    console.log('✅ Weather data fetched and cached for:', data.name);
+
     res.json(data);
   } catch (error) {
     console.error('❌ Weather API error:', error.message);
-    
-    res.status(error.message.includes('API key') ? 401 : 500).json({
-      error: error.message || 'Failed to fetch weather data'
+
+    // Handle network errors
+    if (error.message.includes('fetch') || error.message.includes('network')) {
+      return res.status(503).json({
+        error: 'NETWORK_ERROR',
+        message: 'Unable to connect to weather service. Please check your connection.'
+      });
+    }
+
+    res.status(500).json({
+      error: 'INTERNAL_ERROR',
+      message: error.message || 'Failed to fetch weather data'
     });
   }
 });
@@ -323,50 +397,101 @@ app.get('/api/reverse-geo', async (req, res) => {
   }
 });
 
-// Air pollution endpoint
+// Air pollution endpoint with validation
 app.get('/api/air-pollution', async (req, res) => {
   try {
     const { lat, lon } = req.query;
 
     if (!lat || !lon) {
       return res.status(400).json({
-        error: 'Missing required parameters: lat and lon'
+        error: 'MISSING_PARAMETERS',
+        message: 'Missing required parameters: lat and lon'
+      });
+    }
+
+    const latNum = parseFloat(lat);
+    const lonNum = parseFloat(lon);
+
+    if (isNaN(latNum) || isNaN(lonNum)) {
+      return res.status(400).json({
+        error: 'INVALID_COORDINATES',
+        message: 'Invalid coordinates. lat and lon must be numbers.'
       });
     }
 
     // Check cache
     const cacheKey = `air:${lat}:${lon}`;
     const cached = cache.get(cacheKey);
-    
+
     if (cached) {
       console.log('📦 Cache hit for air quality');
       return res.json(cached);
     }
 
     // Fetch from OpenWeatherMap
-    const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${lat}&lon=${lon}&appid=${API_KEY}`;
-    
+    const url = `https://api.openweathermap.org/data/2.5/air_pollution?lat=${latNum}&lon=${lonNum}&appid=${API_KEY}`;
+
     console.log('🌐 Fetching air quality from API');
-    
+
     const response = await fetch(url);
-    
+
     if (!response.ok) {
-      throw new Error(`Air quality API error: ${response.status}`);
+      if (response.status === 404) {
+        // Air quality not available for this location - return gracefully
+        return res.json({
+          list: [],
+          message: 'Air quality data not available for this location'
+        });
+      }
+      
+      let errorMessage = 'Unknown API error';
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.message || `API error: ${response.status}`;
+      } catch (e) {
+        errorMessage = `API error: ${response.status}`;
+      }
+
+      if (response.status === 401) {
+        return res.status(401).json({
+          error: 'INVALID_API_KEY',
+          message: 'Invalid API key configuration'
+        });
+      } else if (response.status === 429) {
+        return res.status(429).json({
+          error: 'RATE_LIMIT_EXCEEDED',
+          message: 'Too many requests. Please wait a moment.'
+        });
+      } else {
+        return res.status(response.status).json({
+          error: 'API_ERROR',
+          message: errorMessage
+        });
+      }
     }
 
     const data = await response.json();
-    
+
+    // Validate response structure
+    if (!data || !data.list || !Array.isArray(data.list)) {
+      return res.status(500).json({
+        error: 'INVALID_RESPONSE',
+        message: 'Received invalid air quality data'
+      });
+    }
+
     // Cache the response
     cache.set(cacheKey, data);
-    
+
     console.log('✅ Air quality data fetched and cached');
-    
+
     res.json(data);
   } catch (error) {
     console.error('❌ Air quality API error:', error.message);
-    
+
     res.status(500).json({
-      error: error.message || 'Failed to fetch air quality data'
+      error: 'INTERNAL_ERROR',
+      message: error.message || 'Failed to fetch air quality data'
     });
   }
 });
