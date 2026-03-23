@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow - Live Weather Forecast</title>
+  <meta name="description" content="Get real-time weather updates for any city worldwide">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <span class="logo-icon">🌤️</span>
+        <h1>WeatherNow</h1>
+      </div>
+      <p class="tagline">Real-time weather forecasts worldwide</p>
+    </header>
+
+    <!-- Search Section -->
+    <section class="search-section">
+      <div class="search-box">
+        <input 
+          type="text" 
+          id="city-input" 
+          placeholder="Enter city name (e.g., London, New York, Mumbai)" 
+          autocomplete="off"
+        >
+        <button id="search-btn" class="search-btn">
+          <span>🔍</span>
+          <span>Search</span>
+        </button>
+      </div>
+      <button id="location-btn" class="location-btn" title="Use my location">
+        📍 Use My Location
+      </button>
+    </section>
+
+    <!-- Loading State -->
+    <div id="loading" class="loading hidden">
+      <div class="spinner"></div>
+      <p>Fetching weather data...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="error-message" class="error-message hidden">
+      <span class="error-icon">⚠️</span>
+      <span id="error-text"></span>
+    </div>
+
+    <!-- Weather Display -->
+    <section id="weather-display" class="weather-display hidden">
+      <!-- Location Info -->
+      <div class="location-info">
+        <h2 id="city-name" class="city-name">--</h2>
+        <p id="current-date" class="current-date">--</p>
+      </div>
+
+      <!-- Main Weather -->
+      <div class="weather-main">
+        <div class="temperature-section">
+          <span id="temperature" class="temperature">--</span>
+          <span class="temp-unit">°C</span>
+        </div>
+        <img id="weather-icon" class="weather-icon" src="" alt="Weather icon">
+        <p id="weather-description" class="weather-description">--</p>
+      </div>
+
+      <!-- Weather Badges -->
+      <div class="weather-badges">
+        <span id="feels-like-badge" class="badge">Feels like --°</span>
+        <span id="humidity-badge" class="badge badge-secondary">Humidity: --%</span>
+      </div>
+
+      <!-- Weather Details Grid -->
+      <div class="weather-details">
+        <div class="detail-card">
+          <span class="detail-icon">💨</span>
+          <div class="detail-content">
+            <span class="detail-label">Wind Speed</span>
+            <span id="wind-speed" class="detail-value">-- km/h</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">👁️</span>
+          <div class="detail-content">
+            <span class="detail-label">Visibility</span>
+            <span id="visibility" class="detail-value">-- km</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">📊</span>
+          <div class="detail-content">
+            <span class="detail-label">Pressure</span>
+            <span id="pressure" class="detail-value">-- hPa</span>
+          </div>
+        </div>
+        <div class="detail-card">
+          <span class="detail-icon">🌡️</span>
+          <div class="detail-content">
+            <span class="detail-label">Feels Like</span>
+            <span id="feels-like" class="detail-value">--°</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Air Quality Section -->
+      <div class="aqi-section">
+        <h3>🌬️ Air Quality Index</h3>
+        <div class="aqi-display">
+          <div id="aqi-value" class="aqi-value">--</div>
+          <div id="aqi-label" class="aqi-label">--</div>
+        </div>
+        <div class="aqi-details">
+          <div class="aqi-item">
+            <span class="aqi-item-label">PM2.5</span>
+            <span id="pm25" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">PM10</span>
+            <span id="pm10" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">O₃</span>
+            <span id="o3" class="aqi-item-value">--</span>
+          </div>
+          <div class="aqi-item">
+            <span class="aqi-item-label">NO₂</span>
+            <span id="no2" class="aqi-item-value">--</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- API Status -->
+    <section class="api-status">
+      <p>
+        <span class="status-indicator"></span>
+        API Status: <span id="api-status">Checking...</span>
+      </p>
+      <p class="api-url">Endpoint: <code id="api-url">--</code></p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <p>Powered by <a href="https://openweathermap.org" target="_blank">OpenWeatherMap</a></p>
+      <p>Built with ❤️ using Node.js & Express</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

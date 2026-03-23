@@ -1,159 +1,178 @@
-# 🌤️ WeatherNow - Ultimate Weather Application
+# WeatherNow - Production Ready Weather App
 
-**Version**: 3.0 - Production Ready  
-**Demo**: [Live Demo Link]  
+A modern, production-ready weather application built with Node.js, Express, and vanilla JavaScript.
 
-A modern, feature-rich weather application with real-time updates, beautiful UI, and advanced features.
+## 🌟 Features
 
----
-
-## ✨ Features
-
-- 🌍 **Real-time Weather** - Current temperature, humidity, wind, and more
-- 📅 **7-Day Forecast** - Weekly weather predictions
-- ⏰ **Hourly Forecast** - 24-hour detailed forecast
-- 🌬️ **Air Quality Index** - PM2.5, PM10, O₃, NO₂ levels
-- 🔔 **Push Notifications** - Browser-based weather alerts
-- 🌍 **Multi-language** - 6 languages supported
-- ♿ **Accessible** - WCAG 2.1 AA compliant
-- 📤 **Export** - PDF, Image, Social sharing
-- 🎨 **6 Themes** - Beautiful glassmorphism design
-- 📱 **PWA** - Installable with offline support
-
----
-
-## 🚀 Quick Start
-
-### 1. Clone Repository
-```bash
-git clone https://github.com/YOUR_USERNAME/weathernow.git
-cd weathernow
-```
-
-### 2. Setup API Key
-```bash
-# Copy example config
-cp js/config.example.js js/config.local.js
-
-# Edit config.local.js and add your API key
-# Get free API key: https://openweathermap.org/api
-```
-
-### 3. Open in Browser
-```bash
-# Use any static file server
-npx serve
-
-# Or open index.html directly
-```
-
----
-
-## 🔐 API Key Setup
-
-**IMPORTANT**: Never commit API keys to GitHub!
-
-1. Get free API key: https://openweathermap.org/api
-2. Copy `js/config.example.js` to `js/config.local.js`
-3. Add your API key in `config.local.js`
-4. File is gitignored - safe!
-
----
+- **Real-time Weather Data** - Current weather, forecasts, and air quality
+- **Modern UI** - Beautiful gradient design with smooth animations
+- **Location Support** - Search by city or use GPS location
+- **Air Quality Index** - PM2.5, PM10, O₃, NO₂ measurements
+- **Responsive Design** - Works on desktop, tablet, and mobile
+- **Secure Backend** - API key hidden on server, rate limiting, caching
+- **Production Ready** - Deployed on Render with custom domain support
 
 ## 📁 Project Structure
 
 ```
-weathernow/
-├── index.html              # Main HTML
-├── manifest.json           # PWA manifest
-├── sw.js                   # Service worker
-├── package.json            # Dependencies
-│
-├── js/
-│   ├── main.js            # Main app
-│   ├── config.js          # Config (safe)
-│   ├── config.example.js  # Example (safe)
-│   ├── config.local.js    # Local (gitignored)
-│   └── ...
-│
-├── css/
-│   ├── styles.css
-│   ├── components.css
-│   └── ...
-│
-└── server/
-    └── proxy-server.js    # Backend proxy (optional)
+Weather_Website/
+├── public/                    # Frontend static files
+│   ├── index.html            # Main HTML page
+│   ├── styles.css            # Modern CSS styles
+│   └── script.js             # Frontend JavaScript
+├── server/
+│   └── proxy-server.js       # Express backend server
+├── .env                      # Environment variables (gitignored)
+├── .env.example              # Environment template
+├── package.json
+└── README.md
 ```
 
----
+## 🚀 Quick Start
 
-## 🛠️ Development
+### 1. Install Dependencies
 
 ```bash
-# Install dependencies
 npm install
+```
 
-# Start backend (optional)
+### 2. Setup Environment Variables
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` and add your OpenWeatherMap API key:
+
+```env
+OPENWEATHER_API_KEY=your_api_key_here
+PORT=3001
+```
+
+Get your API key: https://home.openweathermap.org/users/sign_up
+
+### 3. Run the Server
+
+```bash
+# Development (with auto-reload)
+npm run dev
+
+# Production
 npm start
-
-# Run frontend
-npx serve
 ```
 
----
+Open http://localhost:3001 in your browser.
 
-## 📦 Deployment
+## 🌐 API Endpoints
 
-### Vercel
-```bash
-npm install -g vercel
-vercel
+| Endpoint | Description |
+|----------|-------------|
+| `GET /` | Weather App (Frontend) |
+| `GET /api/health` | Server health check |
+| `GET /api/weather?lat=&lon=` | Current weather |
+| `GET /api/geo?q=` | Geocoding |
+| `GET /api/reverse-geo?lat=&lon=` | Reverse geocoding |
+| `GET /api/air-pollution?lat=&lon=` | Air quality |
+| `GET /api/alerts?lat=&lon=` | Weather alerts |
+
+## 📦 Deploy to Render
+
+### Option 1: Automatic Deploy (Recommended)
+
+1. Push code to GitHub
+2. Go to https://render.com
+3. Create new **Web Service**
+4. Connect your GitHub repo
+5. Configure:
+   - **Build Command:** `npm install`
+   - **Start Command:** `npm start`
+6. Add environment variable:
+   - **Key:** `OPENWEATHER_API_KEY`
+   - **Value:** your_api_key
+7. Click **Create Web Service**
+
+### Option 2: Manual Deploy
+
+1. In Render Dashboard, create Web Service
+2. Set environment variables
+3. Deploy from Git or manually
+
+## 🔒 Security Features
+
+- ✅ API key stored in environment variables (never exposed)
+- ✅ CORS protection with allowed origins
+- ✅ Rate limiting (100 req/15min per IP)
+- ✅ Security headers (X-Frame-Options, X-XSS-Protection)
+- ✅ Input validation
+- ✅ Error handling
+
+## 🎨 Frontend Features
+
+- **Search by City** - Type any city name worldwide
+- **Use My Location** - GPS-based weather
+- **Air Quality Display** - Color-coded AQI with health info
+- **Weather Details** - Wind, visibility, pressure, feels like
+- **Responsive Design** - Mobile-first approach
+- **Loading States** - Smooth UX with spinners
+- **Error Handling** - User-friendly error messages
+
+## 🛠️ Configuration
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `OPENWEATHER_API_KEY` | OpenWeatherMap API key | Required |
+| `PORT` | Server port | 3001 |
+| `NODE_ENV` | Environment | development |
+
+### CORS Configuration
+
+Edit `server/proxy-server.js` to add your domains:
+
+```javascript
+app.use(cors({
+  origin: [
+    'http://localhost:3000',
+    'https://yourdomain.com',
+    'https://weather-website-yf9y.onrender.com'
+  ]
+}));
 ```
 
-### Netlify
-```bash
-netlify deploy
-```
+## 📱 Browser Support
 
-### GitHub Pages
-Enable in repository settings.
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+- Mobile browsers
 
----
+## 🐛 Troubleshooting
 
-## 🔒 Security
+### "API Key not set" error
+- Check `.env` file exists
+- Verify `OPENWEATHER_API_KEY` is set
+- For Render: Add in dashboard (Service > Environment)
 
-### Protected Files (Gitignored)
-- `js/config.local.js` - API key (PRIVATE)
-- `.env` - Environment variables (PRIVATE)
-- `node_modules/` - Dependencies
+### CORS errors
+- Add your frontend URL to CORS `origin` array
+- Ensure protocol (http/https) matches
 
-### Safe to Commit
-- Source code (HTML, CSS, JS)
-- Example configs
-- Documentation
+### 404 on root URL
+- Make sure `public/` folder exists
+- Check `index.html` is in `public/`
 
----
+## 📄 License
 
-## 📝 License
+MIT
 
-MIT License - See LICENSE file for details.
+## 🙏 Credits
 
----
-
-## 🙏 Acknowledgments
-
-- **OpenWeatherMap** - Weather data API
-- **Chart.js** - Temperature graphs
-- **html2canvas** - Export functionality
+- Weather data: [OpenWeatherMap](https://openweathermap.org)
+- Icons: OpenWeatherMap Weather Icons
+- Fonts: Google Fonts (Poppins)
 
 ---
 
-## 📞 Support
-
-Open an issue on GitHub or contact: your.email@example.com
-
----
-
-**Made with ❤️ by AKASH**
-
-[Back to top](#readme)
+**Built with ❤️ by AKASH**

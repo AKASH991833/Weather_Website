@@ -15,8 +15,13 @@ import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import NodeCache from 'node-cache';
 import dotenv from 'dotenv';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -54,6 +59,16 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json());
+
+// Serve static files from public folder
+app.use(express.static('public', {
+  setHeaders: (res, path) => {
+    // Set cache headers for static assets
+    if (path.endsWith('.css') || path.endsWith('.js')) {
+      res.setHeader('Cache-Control', 'public, max-age=31536000');
+    }
+  }
+}));
 
 // Security headers
 app.use((req, res, next) => {
@@ -435,6 +450,11 @@ app.get('/api/cache/stats', (req, res) => {
   });
 });
 
+// Root route - Serve welcome page
+app.get('/', (req, res) => {
+  res.sendFile(join(__dirname, '..', 'public', 'index.html'));
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('❌ Server error:', err);
@@ -444,12 +464,18 @@ app.use((err, req, res, next) => {
   });
 });
 
-// 404 handler
+// 404 handler - Serve index.html for SPA routes, JSON for API
 app.use((req, res) => {
-  res.status(404).json({
-    error: 'Not found',
-    message: `Endpoint ${req.method} ${req.path} not found`
-  });
+  // If it's an API route, return JSON 404
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({
+      error: 'Not found',
+      message: `Endpoint ${req.method} ${req.path} not found`
+    });
+  } else {
+    // For non-API routes, serve index.html (SPA support)
+    res.sendFile(join(__dirname, '..', 'public', 'index.html'));
+  }
 });
 
 // Start server
@@ -460,19 +486,24 @@ app.listen(PORT, () => {
   console.log('╚════════════════════════════════════════════════╝');
   console.log('');
   console.log(`✅ Server running on http://localhost:${PORT}`);
+  console.log(`🌐 Frontend: http://localhost:${PORT}/`);
   console.log(`📊 Cache TTL: 10 minutes`);
   console.log(`🔒 Rate limit: 100 requests per 15 minutes`);
   console.log(`🌍 API Key: ${API_KEY.substring(0, 8)}...`);
   console.log('');
   console.log('Available endpoints:');
-  console.log('  GET  /api/health          - Server health check');
-  console.log('  GET  /api/weather         - Current weather');
-  console.log('  GET  /api/onecall         - Forecast & historical');
-  console.log('  GET  /api/geo             - Geocoding');
-  console.log('  GET  /api/reverse-geo     - Reverse geocoding');
-  console.log('  GET  /api/air-pollution   - Air quality index');
-  console.log('  GET  /api/cache/stats     - Cache statistics');
-  console.log('  POST /api/cache/clear     - Clear cache');
+  console.log('  GET  /                      - Weather App (Frontend)');
+  console.log('  GET  /api/health            - Server health check');
+  console.log('  GET  /api/weather           - Current weather');
+  console.log('  GET  /api/onecall           - Forecast & historical');
+  console.log('  GET  /api/geo               - Geocoding');
+  console.log('  GET  /api/reverse-geo       - Reverse geocoding');
+  console.log('  GET  /api/air-pollution     - Air quality index');
+  console.log('  GET  /api/alerts            - Weather alerts');
+  console.log('  GET  /api/cache/stats       - Cache statistics');
+  console.log('  POST /api/cache/clear       - Clear cache');
+  console.log('');
+  console.log('Static files served from: /public');
   console.log('');
 });
 
