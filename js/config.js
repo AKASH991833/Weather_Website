@@ -10,7 +10,7 @@
 
 const CONFIG = {
   // ⭐ Backend Proxy Server URL (API key is hidden here)
-  BACKEND_URL: 'https://weather-website-yj9y.onrender.com/api',
+  BACKEND_URL: 'https://weather-website-yf9y.onrender.com/api',
 
   // Fallback direct OpenWeatherMap API (if backend is down)
   API_KEY: '82ccd04c1fea51e3ba067b31a39eab69',

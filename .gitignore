@@ -3,6 +3,8 @@ js/config.local.js
 .env
 .env.local
 .env.*.local
+# But allow the example file
+!.env.example
 
 # Node modules
 node_modules/

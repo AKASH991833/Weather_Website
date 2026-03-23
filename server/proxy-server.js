@@ -24,12 +24,18 @@ const PORT = process.env.PORT || 3001;
 // Cache for API responses (10 minutes)
 const cache = new NodeCache({ stdTTL: 600, checkperiod: 120 });
 
-// Environment variables
+// Environment variables - API key from env var (set in Render dashboard)
 const API_KEY = process.env.OPENWEATHER_API_KEY;
+
+// Validate API key
 if (!API_KEY) {
-  console.error('❌ OPENWEATHER_API_KEY not found in .env file!');
+  console.error('❌ OPENWEATHER_API_KEY environment variable is not set!');
+  console.error('📝 Please add it in your Render dashboard: Service > Environment > Add Variable');
+  console.error('🔑 Key: OPENWEATHER_API_KEY, Value: your_openweathermap_api_key');
   process.exit(1);
 }
+
+console.log('✅ API Key loaded successfully');
 
 // Middleware
 app.use(cors({
@@ -39,7 +45,8 @@ app.use(cors({
     'http://localhost:8000',
     'http://192.168.1.0/24', // Local network
     /^http:\/\/192\.168\..*/, // Local network IP range
-    'https://weather-website-yj9y.onrender.com',
+    'https://weather-website-yf9y.onrender.com', // Production URL
+    'https://weather-website-yj9y.onrender.com', // Old production URL
     // Add your GitHub Pages URL here when you have it
     // 'https://yourusername.github.io',
     // 'https://yourusername.github.io/weather-website'

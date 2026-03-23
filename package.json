@@ -2,6 +2,7 @@
   "name": "weathernow-backend",
   "version": "1.0.0",
   "description": "WeatherNow - Secure Backend Proxy Server",
+  "type": "module",
   "main": "server/proxy-server.js",
   "scripts": {
     "start": "node server/proxy-server.js",
