@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Loading... - WeatherNow</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .loader {
+      text-align: center;
+    }
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(99, 102, 241, 0.2);
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+    p {
+      color: #94a3b8;
+      margin-bottom: 20px;
+    }
+    .status {
+      background: rgba(30, 41, 59, 0.8);
+      padding: 15px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      max-width: 400px;
+      text-align: left;
+    }
+    .status-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .status-item:last-child {
+      border-bottom: none;
+    }
+    .check { color: #4ade80; }
+    .cross { color: #f87171; }
+    .wait { color: #fbbf24; }
+    .btn {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 15px;
+      font-size: 0.9rem;
+    }
+    .btn:hover {
+      background: #818cf8;
+    }
+    #error-log {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      margin-top: 20px;
+      max-width: 600px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      display: none;
+    }
+    #error-log.visible {
+      display: block;
+    }
+    .error-title {
+      color: #f87171;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="loader">
+    <div class="spinner"></div>
+    <h1>WeatherNow</h1>
+    <p id="status-text">Initializing application...</p>
+    
+    <div class="status">
+      <div class="status-item">
+        <span>Server Connection</span>
+        <span id="server-status" class="wait">⏳ Checking...</span>
+      </div>
+      <div class="status-item">
+        <span>JavaScript Modules</span>
+        <span id="js-status" class="wait">⏳ Loading...</span>
+      </div>
+      <div class="status-item">
+        <span>Weather Data</span>
+        <span id="data-status" class="wait">⏳ Waiting...</span>
+      </div>
+    </div>
+    
+    <button class="btn" onclick="window.location.reload()">🔄 Refresh Page</button>
+    <button class="btn" onclick="toggleErrors()">📋 Show Errors</button>
+    <button class="btn" onclick="window.location.href='/api-status.html'">🔍 API Status</button>
+    
+    <div id="error-log">
+      <div class="error-title">⚠️ JavaScript Errors:</div>
+      <div id="error-messages"></div>
+    </div>
+  </div>
+
+  <script>
+    const errors = [];
+    
+    // Capture all JavaScript errors
+    window.onerror = function(msg, url, line, col, error) {
+      errors.push({
+        message: msg,
+        url: url,
+        line: line,
+        col: col,
+        error: error ? error.stack : null
+      });
+      updateErrorLog();
+      document.getElementById('status-text').textContent = 'Error loading application!';
+      document.getElementById('js-status').innerHTML = '<span class="cross">❌ Failed</span>';
+      return false;
+    };
+    
+    // Capture unhandled promise rejections
+    window.onunhandledrejection = function(event) {
+      errors.push({
+        message: 'Promise rejection: ' + (event.reason?.message || event.reason),
+        url: 'promise',
+        line: 0,
+        col: 0,
+        error: event.reason?.stack
+      });
+      updateErrorLog();
+      return false;
+    };
+    
+    function updateErrorLog() {
+      const log = document.getElementById('error-log');
+      const messages = document.getElementById('error-messages');
+      
+      if (errors.length > 0) {
+        log.classList.add('visible');
+        messages.innerHTML = errors.map((e, i) => 
+          `<div style="margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <strong>Error ${i + 1}:</strong> ${e.message}<br>
+            <small>at ${e.url}:${e.line}:${e.col}</small>
+            ${e.error ? `<br><pre style="margin-top: 5px; white-space: pre-wrap; color: #fca5a5;">${e.error}</pre>` : ''}
+          </div>`
+        ).join('');
+      }
+    }
+    
+    function toggleErrors() {
+      const log = document.getElementById('error-log');
+      log.classList.toggle('visible');
+    }
+    
+    // Check server health
+    async function checkServer() {
+      try {
+        const response = await fetch('/api/health');
+        const data = await response.json();
+        
+        if (data.success) {
+          document.getElementById('server-status').innerHTML = '<span class="check">✅ Online</span>';
+          document.getElementById('status-text').textContent = 'Server connected. Loading modules...';
+          
+          // Try to load main app
+          try {
+            await import('./js/main.js?v=' + Date.now());
+            document.getElementById('js-status').innerHTML = '<span class="check">✅ Loaded</span>';
+            document.getElementById('status-text').textContent = 'Application loaded successfully!';
+            document.getElementById('data-status').innerHTML = '<span class="check">✅ Ready</span>';
+            
+            // Redirect to main page after short delay
+            setTimeout(() => {
+              window.location.href = '/';
+            }, 1000);
+            
+          } catch (jsError) {
+            document.getElementById('js-status').innerHTML = '<span class="cross">❌ Failed</span>';
+            document.getElementById('status-text').textContent = 'Failed to load JavaScript!';
+            console.error('Module load error:', jsError);
+          }
+          
+        } else {
+          document.getElementById('server-status').innerHTML = '<span class="cross">❌ Error</span>';
+        }
+      } catch (err) {
+        document.getElementById('server-status').innerHTML = '<span class="cross">❌ Offline</span>';
+        document.getElementById('status-text').textContent = 'Cannot connect to server!';
+        console.error('Server check failed:', err);
+      }
+    }
+    
+    // Run checks
+    checkServer();
+    
+    // Auto-reload after 10 seconds if stuck
+    setTimeout(() => {
+      if (document.getElementById('data-status').classList.contains('wait')) {
+        document.getElementById('status-text').textContent = 'Loading is taking longer than expected...';
+      }
+    }, 10000);
+  </script>
+</body>
+</html>

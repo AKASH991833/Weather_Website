@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test - WeatherNow</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #0f172a;
+      color: #f8fafc;
+    }
+    .test-card {
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    h2 { margin-top: 0; color: #6366f1; }
+    button {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin: 5px;
+    }
+    button:hover { background: #4f46e5; }
+    .result {
+      background: #0f172a;
+      padding: 15px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success { border-left: 4px solid #10b981; }
+    .error { border-left: 4px solid #ef4444; }
+    .loading { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <h1>🔧 WeatherNow API Test</h1>
+  <p>Test if your API is working correctly</p>
+
+  <div class="test-card">
+    <h2>1. Health Check</h2>
+    <button onclick="testHealth()">Test Health</button>
+    <div id="health-result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>2. Geocoding (Search City)</h2>
+    <input type="text" id="city-input" placeholder="Enter city name" value="Mumbai" 
+           style="padding: 8px; border-radius: 4px; border: 1px solid #334155; background: #0f172a; color: white; margin-right: 10px;">
+    <button onclick="testGeo()">Test Search</button>
+    <div id="geo-result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>3. Weather Data</h2>
+    <button onclick="testWeather()">Test Weather (London)</button>
+    <div id="weather-result" class="result"></div>
+  </div>
+
+  <div class="test-card">
+    <h2>4. Full Flow (Search + Weather)</h2>
+    <button onclick="testFullFlow()">Test Complete Flow</button>
+    <div id="full-result" class="result"></div>
+  </div>
+
+  <script>
+    const API_BASE = '/api';
+
+    async function testHealth() {
+      const result = document.getElementById('health-result');
+      result.className = 'result loading';
+      result.textContent = 'Testing...';
+
+      try {
+        const response = await fetch(`${API_BASE}/health`);
+        const data = await response.json();
+        
+        if (data.success) {
+          result.className = 'result success';
+          result.textContent = `✅ API is healthy!\n\nStatus: ${data.data.status}\nUptime: ${data.data.uptime.toFixed(2)}s\nCache Keys: ${data.data.cache.keys}\nEnvironment: ${data.data.environment}`;
+        } else {
+          result.className = 'result error';
+          result.textContent = `❌ API returned unhealthy status\n\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.className = 'result error';
+        result.textContent = `❌ Error: ${error.message}`;
+      }
+    }
+
+    async function testGeo() {
+      const city = document.getElementById('city-input').value.trim();
+      const result = document.getElementById('geo-result');
+      
+      if (!city) {
+        result.className = 'result error';
+        result.textContent = '❌ Please enter a city name';
+        return;
+      }
+
+      result.className = 'result loading';
+      result.textContent = `Searching for "${city}"...`;
+
+      try {
+        const response = await fetch(`${API_BASE}/geo?q=${encodeURIComponent(city)}`);
+        const data = await response.json();
+        
+        if (data.success && data.data.length > 0) {
+          result.className = 'result success';
+          const locations = data.data.map((loc, i) => 
+            `${i + 1}. ${loc.name}, ${loc.country}${loc.state ? ', ' + loc.state : ''}\n   Lat: ${loc.lat}, Lon: ${loc.lon}`
+          ).join('\n\n');
+          result.textContent = `✅ Found ${data.data.length} location(s):\n\n${locations}`;
+        } else {
+          result.className = 'result error';
+          result.textContent = `❌ No locations found for "${city}"\n\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.className = 'result error';
+        result.textContent = `❌ Error: ${error.message}`;
+      }
+    }
+
+    async function testWeather() {
+      const result = document.getElementById('weather-result');
+      result.className = 'result loading';
+      result.textContent = 'Fetching weather for London...';
+
+      try {
+        const response = await fetch(`${API_BASE}/weather?lat=51.5074&lon=-0.1278&units=metric`);
+        const data = await response.json();
+        
+        if (data.success) {
+          result.className = 'result success';
+          const w = data.data;
+          result.textContent = `✅ Weather data fetched!\n\nCity: ${w.name}, ${w.sys.country}\nTemperature: ${w.main.temp}°C (Feels like: ${w.main.feels_like}°C)\nConditions: ${w.weather[0].description}\nHumidity: ${w.main.humidity}%\nWind: ${w.wind.speed} m/s\nPressure: ${w.main.pressure} hPa`;
+        } else {
+          result.className = 'result error';
+          result.textContent = `❌ API returned error\n\n${JSON.stringify(data, null, 2)}`;
+        }
+      } catch (error) {
+        result.className = 'result error';
+        result.textContent = `❌ Error: ${error.message}`;
+      }
+    }
+
+    async function testFullFlow() {
+      const result = document.getElementById('full-result');
+      result.className = 'result loading';
+      result.textContent = 'Step 1: Searching for Mumbai...';
+
+      try {
+        // Step 1: Search
+        const geoResponse = await fetch(`${API_BASE}/geo?q=Mumbai`);
+        const geoData = await geoResponse.json();
+        
+        if (!geoData.success || geoData.length === 0) {
+          throw new Error('Geocoding failed');
+        }
+
+        const location = geoData.data[0];
+        result.textContent += `\n✅ Found: ${location.name}, ${location.country}\n\nStep 2: Fetching weather data...`;
+
+        // Step 2: Get weather
+        const weatherResponse = await fetch(`${API_BASE}/weather?lat=${location.lat}&lon=${location.lon}&units=metric`);
+        const weatherData = await weatherResponse.json();
+
+        if (!weatherData.success) {
+          throw new Error('Weather API failed');
+        }
+
+        const w = weatherData.data;
+        result.className = 'result success';
+        result.textContent = `✅ COMPLETE FLOW SUCCESSFUL!\n\n📍 Location: ${location.name}, ${location.country}\n   Coordinates: ${location.lat}, ${location.lon}\n\n🌡️  Temperature: ${w.main.temp}°C (Feels like: ${w.main.feels_like}°C)\n☁️  Conditions: ${w.weather[0].description}\n💧 Humidity: ${w.main.humidity}%\n💨 Wind: ${w.wind.speed} m/s\n📊 Pressure: ${w.main.pressure} hPa\n\n🎉 Your API is working perfectly!`;
+      } catch (error) {
+        result.className = 'result error';
+        result.textContent = `❌ Full flow failed: ${error.message}`;
+      }
+    }
+
+    // Auto-run health check on load
+    window.onload = () => {
+      testHealth();
+    };
+  </script>
+</body>
+</html>

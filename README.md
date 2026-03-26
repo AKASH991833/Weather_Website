@@ -1,34 +1,45 @@
-# WeatherNow - Production Ready Weather App
+# WeatherNow - Production Ready Weather Application
 
 A modern, production-ready weather application built with Node.js, Express, and vanilla JavaScript.
 
-## 🌟 Features
+## 🚀 Features
 
-- **Real-time Weather Data** - Current weather, forecasts, and air quality
-- **Modern UI** - Beautiful gradient design with smooth animations
-- **Location Support** - Search by city or use GPS location
-- **Air Quality Index** - PM2.5, PM10, O₃, NO₂ measurements
-- **Responsive Design** - Works on desktop, tablet, and mobile
-- **Secure Backend** - API key hidden on server, rate limiting, caching
-- **Production Ready** - Deployed on Render with custom domain support
+### Backend
+- **Secure API Proxy**: Hides OpenWeatherMap API key
+- **Rate Limiting**: 100 requests per 15 minutes (configurable)
+- **Response Caching**: 10-minute cache with max 1000 keys
+- **Input Validation**: Comprehensive validation for all endpoints
+- **Request Logging**: Morgan middleware for HTTP logging
+- **CORS Configuration**: Environment-based allowed origins
+- **Error Handling**: Global error handler with standardized responses
+- **Health Check**: `/api/health` endpoint for monitoring
+- **Graceful Shutdown**: Proper cleanup on SIGTERM/SIGINT
+
+### Frontend
+- **Safe Data Access**: All data accessed with fallbacks
+- **Loading States**: With timeout handling
+- **Error Handling**: User-friendly error messages
+- **Fallback UI**: Emoji icons when images fail
+- **Responsive Design**: Mobile-first CSS
+- **Accessibility**: ARIA labels and keyboard navigation
+- **Air Quality**: Real-time AQI with health tips
 
 ## 📁 Project Structure
 
 ```
-Weather_Website/
-├── public/                    # Frontend static files
-│   ├── index.html            # Main HTML page
-│   ├── styles.css            # Modern CSS styles
-│   └── script.js             # Frontend JavaScript
+weather-website/
 ├── server/
-│   └── proxy-server.js       # Express backend server
-├── .env                      # Environment variables (gitignored)
-├── .env.example              # Environment template
-├── package.json
-└── README.md
+│   └── proxy-server.js      # Main server file (only server file)
+├── public/
+│   ├── index.html           # Frontend HTML
+│   ├── script.js            # Frontend JavaScript
+│   └── styles.css           # Frontend CSS
+├── .env.example             # Environment variables template
+├── package.json             # Dependencies
+└── README.md                # This file
 ```
 
-## 🚀 Quick Start
+## 🛠️ Setup
 
 ### 1. Install Dependencies
 
@@ -36,143 +47,146 @@ Weather_Website/
 npm install
 ```
 
-### 2. Setup Environment Variables
+### 2. Configure Environment
+
+Copy `.env.example` to `.env` and add your API key:
 
 ```bash
-cp .env.example .env
-```
-
-Edit `.env` and add your OpenWeatherMap API key:
-
-```env
+# Get your API key from: https://home.openweathermap.org/users/sign_up
 OPENWEATHER_API_KEY=your_api_key_here
-PORT=3001
-```
 
-Get your API key: https://home.openweathermap.org/users/sign_up
+# Server port (optional, defaults to 3001)
+PORT=3001
+
+# Node environment
+NODE_ENV=development
+
+# CORS Allowed Origins (comma-separated)
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com
+```
 
 ### 3. Run the Server
 
 ```bash
-# Development (with auto-reload)
+# Development mode
 npm run dev
 
-# Production
+# Production mode
 npm start
 ```
 
-Open http://localhost:3001 in your browser.
+## 📡 API Endpoints
 
-## 🌐 API Endpoints
-
-| Endpoint | Description |
-|----------|-------------|
-| `GET /` | Weather App (Frontend) |
-| `GET /api/health` | Server health check |
-| `GET /api/weather?lat=&lon=` | Current weather |
-| `GET /api/geo?q=` | Geocoding |
-| `GET /api/reverse-geo?lat=&lon=` | Reverse geocoding |
-| `GET /api/air-pollution?lat=&lon=` | Air quality |
-| `GET /api/alerts?lat=&lon=` | Weather alerts |
-
-## 📦 Deploy to Render
-
-### Option 1: Automatic Deploy (Recommended)
-
-1. Push code to GitHub
-2. Go to https://render.com
-3. Create new **Web Service**
-4. Connect your GitHub repo
-5. Configure:
-   - **Build Command:** `npm install`
-   - **Start Command:** `npm start`
-6. Add environment variable:
-   - **Key:** `OPENWEATHER_API_KEY`
-   - **Value:** your_api_key
-7. Click **Create Web Service**
-
-### Option 2: Manual Deploy
-
-1. In Render Dashboard, create Web Service
-2. Set environment variables
-3. Deploy from Git or manually
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/` | Frontend application |
+| GET | `/api/health` | Server health check |
+| GET | `/api/weather?lat=&lon=` | Current weather |
+| GET | `/api/geo?q=` | Geocoding (city search) |
+| GET | `/api/reverse-geo?lat=&lon=` | Reverse geocoding |
+| GET | `/api/air-pollution?lat=&lon=` | Air quality index |
+| GET | `/api/alerts?lat=&lon=` | Weather alerts |
+| GET | `/api/onecall?lat=&lon=` | Forecast data |
+| GET | `/api/cache/stats` | Cache statistics |
+| POST | `/api/cache/clear` | Clear cache |
 
 ## 🔒 Security Features
 
-- ✅ API key stored in environment variables (never exposed)
-- ✅ CORS protection with allowed origins
-- ✅ Rate limiting (100 req/15min per IP)
-- ✅ Security headers (X-Frame-Options, X-XSS-Protection)
-- ✅ Input validation
-- ✅ Error handling
+- API key stored only in environment variables
+- CORS configured via environment variable
+- Rate limiting on all API endpoints
+- Input validation on all parameters
+- Security headers (XSS, Clickjacking, MIME sniffing)
+- Request timeout handling
+- No sensitive data exposed in responses
 
-## 🎨 Frontend Features
+## 📊 Standardized API Response Format
 
-- **Search by City** - Type any city name worldwide
-- **Use My Location** - GPS-based weather
-- **Air Quality Display** - Color-coded AQI with health info
-- **Weather Details** - Wind, visibility, pressure, feels like
-- **Responsive Design** - Mobile-first approach
-- **Loading States** - Smooth UX with spinners
-- **Error Handling** - User-friendly error messages
+All endpoints return consistent JSON:
 
-## 🛠️ Configuration
-
-### Environment Variables
-
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `OPENWEATHER_API_KEY` | OpenWeatherMap API key | Required |
-| `PORT` | Server port | 3001 |
-| `NODE_ENV` | Environment | development |
-
-### CORS Configuration
-
-Edit `server/proxy-server.js` to add your domains:
-
-```javascript
-app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://yourdomain.com',
-    'https://weather-website-yf9y.onrender.com'
-  ]
-}));
+```json
+{
+  "success": true,
+  "data": { ... },
+  "error": null,
+  "message": "Optional message"
+}
 ```
 
-## 📱 Browser Support
+Error response:
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
-- Mobile browsers
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "ERROR_CODE",
+  "message": "Human-readable error message"
+}
+```
 
-## 🐛 Troubleshooting
+## 🌐 Deployment (Render)
 
-### "API Key not set" error
-- Check `.env` file exists
-- Verify `OPENWEATHER_API_KEY` is set
-- For Render: Add in dashboard (Service > Environment)
+1. Push code to GitHub
+2. Create new Web Service on Render
+3. Connect your repository
+4. Add environment variables:
+   - `OPENWEATHER_API_KEY`
+   - `CORS_ALLOWED_ORIGINS` (include your Render URL)
+   - `NODE_ENV=production`
+5. Deploy!
 
-### CORS errors
-- Add your frontend URL to CORS `origin` array
-- Ensure protocol (http/https) matches
+## 🧪 Testing
 
-### 404 on root URL
-- Make sure `public/` folder exists
-- Check `index.html` is in `public/`
+Test the health endpoint:
+
+```bash
+curl http://localhost:3001/api/health
+```
+
+Test weather API:
+
+```bash
+curl "http://localhost:3001/api/weather?lat=51.5074&lon=-0.1278"
+```
+
+## 📝 Changelog
+
+### v2.0.0 - Production Ready
+
+**Removed:**
+- Dead code (server/server.js, js/, css/, root index.html)
+- Duplicate files and unused HTML generators
+- Hardcoded API keys and CORS origins
+
+**Added:**
+- Morgan request logging
+- Input validation for all endpoints
+- maxKeys limit on cache (prevents memory overflow)
+- Standardized API response format
+- Global error handler middleware
+- Rate limit headers
+- Request timeout handling
+- Health check endpoint improvements
+
+**Improved:**
+- CORS configuration via environment variable
+- Error messages (user-friendly)
+- Loading states with timeout
+- Fallback UI for icons
+- Code organization and readability
 
 ## 📄 License
 
-MIT
+MIT License - see LICENSE file for details.
 
-## 🙏 Credits
+## 🤝 Contributing
 
-- Weather data: [OpenWeatherMap](https://openweathermap.org)
-- Icons: OpenWeatherMap Weather Icons
-- Fonts: Google Fonts (Poppins)
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
----
+## 📧 Support
 
-**Built with ❤️ by AKASH**
+For issues and questions, please open an issue on GitHub.

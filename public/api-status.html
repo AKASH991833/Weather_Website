@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Status - WeatherNow</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #6366f1;
+      font-size: 2.5rem;
+    }
+    .status-card {
+      background: rgba(30, 41, 59, 0.8);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 25px;
+      margin-bottom: 20px;
+      transition: transform 0.3s;
+    }
+    .status-card:hover {
+      transform: translateY(-5px);
+    }
+    .status-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .status-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+    .status-badge {
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .status-badge.success {
+      background: #10b981;
+      color: white;
+    }
+    .status-badge.error {
+      background: #ef4444;
+      color: white;
+    }
+    .status-badge.loading {
+      background: #f59e0b;
+      color: white;
+    }
+    .status-details {
+      background: rgba(15, 23, 42, 0.5);
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.9rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .status-details pre {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+    .test-btn {
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      color: white;
+      border: none;
+      padding: 12px 30px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 20px;
+      transition: transform 0.2s;
+    }
+    .test-btn:hover {
+      transform: scale(1.02);
+    }
+    .test-btn:active {
+      transform: scale(0.98);
+    }
+    .env-info {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .env-info h3 {
+      color: #10b981;
+      margin-bottom: 10px;
+    }
+    .env-info code {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+    }
+    .icon {
+      font-size: 1.5rem;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 API Status Dashboard</h1>
+    
+    <div class="env-info">
+      <h3>✅ Environment Configuration</h3>
+      <p><strong>API Key Status:</strong> <span id="api-key-status">Checking...</span></p>
+      <p><strong>Server Port:</strong> <code>3001</code></p>
+      <p><strong>Environment:</strong> <code>development</code></p>
+      <p style="margin-top: 10px; color: #94a3b8; font-size: 0.9rem;">
+        ℹ️ .env file is gitignored for security. This is normal and expected.
+      </p>
+    </div>
+
+    <div class="status-card">
+      <div class="status-header">
+        <div class="status-title"><span class="icon">💚</span>API Health</div>
+        <span class="status-badge loading" id="health-badge">Testing...</span>
+      </div>
+      <div class="status-details">
+        <pre id="health-details">Waiting for test...</pre>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-header">
+        <div class="status-title"><span class="icon">🌤️</span>Weather API</div>
+        <span class="status-badge loading" id="weather-badge">Testing...</span>
+      </div>
+      <div class="status-details">
+        <pre id="weather-details">Waiting for test...</pre>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-header">
+        <div class="status-title"><span class="icon">📍</span>Geo API</div>
+        <span class="status-badge loading" id="geo-badge">Testing...</span>
+      </div>
+      <div class="status-details">
+        <pre id="geo-details">Waiting for test...</pre>
+      </div>
+    </div>
+
+    <div class="status-card">
+      <div class="status-header">
+        <div class="status-title"><span class="icon">📅</span>Forecast API</div>
+        <span class="status-badge loading" id="forecast-badge">Testing...</span>
+      </div>
+      <div class="status-details">
+        <pre id="forecast-details">Waiting for test...</pre>
+      </div>
+    </div>
+
+    <button class="test-btn" onclick="runAllTests()">🔄 Run All Tests Again</button>
+  </div>
+
+  <script>
+    async function testEndpoint(url, badgeId, detailsId) {
+      const badge = document.getElementById(badgeId);
+      const details = document.getElementById(detailsId);
+      
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+          badge.className = 'status-badge success';
+          badge.textContent = '✅ Working';
+          details.textContent = JSON.stringify(data, null, 2);
+          return true;
+        } else {
+          badge.className = 'status-badge error';
+          badge.textContent = '❌ Failed';
+          details.textContent = 'API returned unsuccessful response: ' + JSON.stringify(data, null, 2);
+          return false;
+        }
+      } catch (error) {
+        badge.className = 'status-badge error';
+        badge.textContent = '❌ Error';
+        details.textContent = 'Error: ' + error.message;
+        return false;
+      }
+    }
+
+    async function runAllTests() {
+      // Test Health
+      await testEndpoint('/api/health', 'health-badge', 'health-details');
+      
+      // Test Weather (London)
+      await testEndpoint('/api/weather?lat=51.5074&lon=-0.1278&units=metric', 'weather-badge', 'weather-details');
+      
+      // Test Geo (London)
+      await testEndpoint('/api/geo?q=London', 'geo-badge', 'geo-details');
+      
+      // Test Forecast (London)
+      await testEndpoint('/api/forecast?lat=51.5074&lon=-0.1278&units=metric', 'forecast-badge', 'forecast-details');
+      
+      // Check API Key
+      const healthResponse = await fetch('/api/health');
+      const healthData = await healthResponse.json();
+      if (healthData.success) {
+        document.getElementById('api-key-status').innerHTML = '<span style="color: #10b981;">✅ Configured & Working</span>';
+      }
+    }
+
+    // Run tests on page load
+    runAllTests();
+  </script>
+</body>
+</html>

@@ -7,9 +7,10 @@
   command = "echo 'No build required - static site'"
 
 [[redirects]]
-  # Redirect all API calls to backend (if using)
+  # Proxy API calls to the backend server (Render)
+  # Update the 'to' URL with your actual Render backend URL
   from = "/api/*"
-  to = "https://api.openweathermap.org/:splat"
+  to = "https://weathernow-app.onrender.com/api/:splat"
   status = 200
   force = true
 

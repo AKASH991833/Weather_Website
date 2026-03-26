@@ -3,33 +3,15 @@
  * GitHub Pages Compatible - Relative Paths
  */
 
-const CACHE_NAME = 'weathernow-v10';
+const CACHE_NAME = 'weathernow-v11';
 const STATIC_ASSETS = [
   './',
   './index.html',
-  './css/styles.css',
-  './css/components.css',
-  './css/responsive.css',
-  './css/animations.css',
-  './css/ui-enhanced.css',
-  './css/animations-enhanced.css',
-  './css/responsive-enhanced.css',
-  './css/accessibility.css',
-  './css/alerts.css',
+  './styles.css',
   './js/main.js',
   './js/api.js',
   './js/ui.js',
-  './js/config.js',
-  './js/features.js',
-  './js/pwa.js',
-  './js/animations.js',
-  './js/weather-api.js',
-  './js/location-api.js',
-  './js/location-display.js',
-  './js/alerts.js',
-  './js/notifications.js',
-  './js/advanced-features.js',
-  './js/error-boundary.js',
+  './js/utils.js',
   './manifest.json'
 ];
 

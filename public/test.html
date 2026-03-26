@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WeatherNow - Console Test</title>
+  <style>
+    body { 
+      font-family: 'Courier New', monospace; 
+      background: #0f172a; 
+      color: #e2e8f0; 
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    h1 { color: #6366f1; }
+    .test-section { 
+      background: #1e293b; 
+      padding: 15px; 
+      margin: 15px 0; 
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .test-btn {
+      background: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-size: 14px;
+    }
+    .test-btn:hover { background: #818cf8; }
+    .result { 
+      background: #0f172a; 
+      padding: 10px; 
+      margin: 10px 0; 
+      border-radius: 4px;
+      font-size: 13px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .success { color: #4ade80; }
+    .error { color: #f87171; }
+    .info { color: #60a5fa; }
+    .warning { color: #fbbf24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔧 WeatherNow Diagnostic Tool</h1>
+    
+    <div class="test-section">
+      <h3>1. API Tests</h3>
+      <button class="test-btn" onclick="testAPIHealth()">Test API Health</button>
+      <button class="test-btn" onclick="testWeatherAPI()">Test Weather API</button>
+      <button class="test-btn" onclick="testGeoAPI()">Test Geo API</button>
+      <div id="api-results" class="result">Click buttons to test APIs...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>2. JavaScript Module Tests</h3>
+      <button class="test-btn" onclick="testModuleLoad()">Test Module Loading</button>
+      <button class="test-btn" onclick="testUIElements()">Test UI Elements</button>
+      <div id="js-results" class="result">Click buttons to test JS modules...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>3. LocalStorage</h3>
+      <button class="test-btn" onclick="checkLocalStorage()">Check LocalStorage</button>
+      <button class="test-btn" onclick="clearLocalStorage()">Clear LocalStorage</button>
+      <div id="storage-results" class="result">Checking storage...</div>
+    </div>
+    
+    <div class="test-section">
+      <h3>4. Quick Fix</h3>
+      <button class="test-btn" onclick="forceLoadWeather()">Force Load London Weather</button>
+      <button class="test-btn" onclick="window.location.href='/'">Go to Main Page</button>
+      <div id="fix-results" class="result">Click to apply fixes...</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import * as api from './js/api.js';
+    import * as ui from './js/ui.js';
+    
+    window.api = api;
+    window.ui = ui;
+    
+    function log(elementId, message, type = 'info') {
+      const el = document.getElementById(elementId);
+      const span = document.createElement('div');
+      span.className = type;
+      span.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      el.appendChild(span);
+      el.scrollTop = el.scrollHeight;
+    }
+    
+    window.testAPIHealth = async () => {
+      const el = document.getElementById('api-results');
+      el.innerHTML = '';
+      log('api-results', 'Testing API health...', 'info');
+      try {
+        const result = await api.checkApiHealth();
+        if (result.success) {
+          log('api-results', `✅ API Health: ${result.data.status}`, 'success');
+          log('api-results', `   Uptime: ${result.data.uptime.toFixed(2)}s`, 'info');
+          log('api-results', `   Cache keys: ${result.data.cache.keys}`, 'info');
+        } else {
+          log('api-results', `❌ API Health check failed`, 'error');
+        }
+      } catch (e) {
+        log('api-results', `❌ Error: ${e.message}`, 'error');
+      }
+    };
+    
+    window.testWeatherAPI = async () => {
+      const el = document.getElementById('api-results');
+      el.innerHTML = '';
+      log('api-results', 'Fetching weather for London...', 'info');
+      try {
+        const result = await api.fetchWeather(51.5074, -0.1278, 'metric');
+        if (result.success) {
+          log('api-results', `✅ Weather API working!`, 'success');
+          log('api-results', `   City: ${result.data.name}`, 'info');
+          log('api-results', `   Temperature: ${result.data.main.temp}°C`, 'info');
+          log('api-results', `   Condition: ${result.data.weather[0].description}`, 'info');
+        } else {
+          log('api-results', `❌ Weather API failed: ${result.error?.message}`, 'error');
+        }
+      } catch (e) {
+        log('api-results', `❌ Error: ${e.message}`, 'error');
+      }
+    };
+    
+    window.testGeoAPI = async () => {
+      const el = document.getElementById('api-results');
+      el.innerHTML = '';
+      log('api-results', 'Searching for "London"...', 'info');
+      try {
+        const result = await api.fetchGeo('London');
+        if (result && result.length > 0) {
+          log('api-results', `✅ Geo API working!`, 'success');
+          log('api-results', `   Found ${result.length} results`, 'info');
+          log('api-results', `   First result: ${result[0].name}, ${result[0].country}`, 'info');
+        } else {
+          log('api-results', `❌ Geo API returned no results`, 'error');
+        }
+      } catch (e) {
+        log('api-results', `❌ Error: ${e.message}`, 'error');
+      }
+    };
+    
+    window.testModuleLoad = async () => {
+      const el = document.getElementById('js-results');
+      el.innerHTML = '';
+      log('js-results', 'Testing module loading...', 'info');
+      
+      try {
+        if (api.fetchWeather) {
+          log('js-results', '✅ api.js loaded - fetchWeather available', 'success');
+        } else {
+          log('js-results', '❌ api.js - fetchWeather not found', 'error');
+        }
+      } catch (e) {
+        log('js-results', `❌ api.js error: ${e.message}`, 'error');
+      }
+      
+      try {
+        if (ui.initializeElements) {
+          log('js-results', '✅ ui.js loaded - initializeElements available', 'success');
+        } else {
+          log('js-results', '❌ ui.js - initializeElements not found', 'error');
+        }
+      } catch (e) {
+        log('js-results', `❌ ui.js error: ${e.message}`, 'error');
+      }
+    };
+    
+    window.testUIElements = () => {
+      const el = document.getElementById('js-results');
+      el.innerHTML = '';
+      log('js-results', 'Checking UI elements...', 'info');
+      
+      const elements = [
+        'city-input', 'search-btn', 'weather-display', 
+        'temperature', 'city-name', 'loading'
+      ];
+      
+      elements.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          log('js-results', `✅ Found: ${id}`, 'success');
+        } else {
+          log('js-results', `❌ Missing: ${id}`, 'error');
+        }
+      });
+    };
+    
+    window.checkLocalStorage = () => {
+      const el = document.getElementById('storage-results');
+      el.innerHTML = '';
+      
+      const items = ['lastCoords', 'lastCity', 'units', 'favorites', 'theme'];
+      
+      items.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          log('storage-results', `✅ ${key}: ${value}`, 'success');
+        } else {
+          log('storage-results', `⚪ ${key}: (not set)`, 'warning');
+        }
+      });
+    };
+    
+    window.clearLocalStorage = () => {
+      localStorage.clear();
+      const el = document.getElementById('storage-results');
+      el.innerHTML = '';
+      log('storage-results', '🗑️ LocalStorage cleared!', 'success');
+      log('storage-results', 'Reload the page to apply changes', 'info');
+    };
+    
+    window.forceLoadWeather = async () => {
+      const el = document.getElementById('fix-results');
+      el.innerHTML = '';
+      log('fix-results', 'Force loading London weather...', 'info');
+      
+      try {
+        const result = await api.fetchWeather(51.5074, -0.1278, 'metric');
+        if (result.success) {
+          log('fix-results', `✅ Success! Temperature: ${result.data.main.temp}°C`, 'success');
+          log('fix-results', 'Now go to main page and it should work', 'info');
+        }
+      } catch (e) {
+        log('fix-results', `❌ Error: ${e.message}`, 'error');
+      }
+    };
+    
+    // Auto-run on load
+    window.checkLocalStorage();
+  </script>
+</body>
+</html>

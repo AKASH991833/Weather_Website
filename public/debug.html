@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug - WeatherNow</title>
+  <style>
+    body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
+    .log { background: #16213e; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    .success { color: #4ade80; }
+    .error { color: #f87171; }
+    .info { color: #60a5fa; }
+  </style>
+</head>
+<body>
+  <h1>🔧 WeatherNow Debug Page</h1>
+  <div id="logs"></div>
+
+  <script>
+    const logs = document.getElementById('logs');
+    
+    function addLog(message, type = 'info') {
+      const div = document.createElement('div');
+      div.className = `log ${type}`;
+      div.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logs.appendChild(div);
+    }
+
+    async function runTests() {
+      addLog('Starting tests...', 'info');
+      
+      // Test 1: Check if main.js loads
+      try {
+        await import('./js/api.js');
+        addLog('✅ api.js loaded successfully', 'success');
+      } catch (e) {
+        addLog('❌ api.js failed: ' + e.message, 'error');
+      }
+      
+      // Test 2: Check API health
+      try {
+        const res = await fetch('/api/health');
+        const data = await res.json();
+        if (data.success) {
+          addLog('✅ API Health: ' + data.data.status, 'success');
+        } else {
+          addLog('❌ API Health check failed', 'error');
+        }
+      } catch (e) {
+        addLog('❌ API Health error: ' + e.message, 'error');
+      }
+      
+      // Test 3: Test weather API
+      try {
+        const res = await fetch('/api/weather?lat=51.5074&lon=-0.1278&units=metric');
+        const data = await res.json();
+        if (data.success) {
+          addLog('✅ Weather API working - Temp: ' + data.data.main.temp + '°C', 'success');
+        } else {
+          addLog('❌ Weather API failed: ' + (data.error?.message || 'Unknown'), 'error');
+        }
+      } catch (e) {
+        addLog('❌ Weather API error: ' + e.message, 'error');
+      }
+      
+      // Test 4: Test geo API
+      try {
+        const res = await fetch('/api/geo?q=London');
+        const data = await res.json();
+        if (data.success && data.data.length > 0) {
+          addLog('✅ Geo API working - Found: ' + data.data[0].name, 'success');
+        } else {
+          addLog('❌ Geo API failed', 'error');
+        }
+      } catch (e) {
+        addLog('❌ Geo API error: ' + e.message, 'error');
+      }
+      
+      // Test 5: Check localStorage
+      try {
+        addLog('📦 LocalStorage lastCoords: ' + localStorage.getItem('lastCoords'), 'info');
+        addLog('📦 LocalStorage lastCity: ' + localStorage.getItem('lastCity'), 'info');
+        addLog('📦 LocalStorage units: ' + localStorage.getItem('units'), 'info');
+      } catch (e) {
+        addLog('❌ LocalStorage error: ' + e.message, 'error');
+      }
+      
+      addLog('Tests completed!', 'info');
+    }
+
+    runTests();
+  </script>
+</body>
+</html>

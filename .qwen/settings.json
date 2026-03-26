@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(del *)",
+      "Bash(npm start)",
+      "Bash(netstat *)",
+      "Bash(findstr *)",
+      "Bash(npx *)",
+      "Bash(python *)",
+      "Bash(taskkill *)",
+      "Bash(tasklist)",
+      "Bash(npm install)",
+      "Bash(timeout *)",
+      "Bash(curl *)"
+    ]
+  }
+}
